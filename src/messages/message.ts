@@ -72,6 +72,7 @@ export const handleIncomingMessage =
     bufferToString(buffer)
       .mapErr(handleMessageError({ name: ErrorName.MessageConversionError }))
       .andThen(parseMessage)
+      .andThen(validateMessage)
       .map((message) => {
         // add connectionId to websocket
         if (message.payload.connectionId) {
@@ -79,7 +80,6 @@ export const handleIncomingMessage =
         }
         return message;
       })
-      .andThen(validateMessage)
       .asyncAndThen(handleMessage(dependencies))
       .mapErr((error) => {
         dependencies.send({ ok: false, error });
