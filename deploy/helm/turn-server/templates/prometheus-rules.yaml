@@ -1,0 +1,23 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "turn-server.fullname" . }}
+  labels:
+    {{- include "turn-server.labels" . | nindent 4 }}
+spec:
+  groups:
+  - name: TURN
+    rules:
+    - alert: NoTURUMetricsAvailable
+      expr: absent(process_start_time_seconds{job="turn-server-metrics"})
+      labels:
+        severity: critical
+        env: {{ .Values.metrics.environment }}
+      for: 5m
+      annotations:
+        summary: "No TURN metrics available"
+        description: "Metrics are not being collected for the TURN server"
+        dashboard: {{ .Values.metrics.dashboard_url }}
+        runbook_url: "https://radixdlt.atlassian.net/wiki/spaces/DT/pages/2563932288/Runbooks"
+{{- end }}
