@@ -1,12 +1,12 @@
-import { v4 } from 'uuid';
+import { v4 } from 'uuid'
 
 const getEnv = (key: string) => {
-  const env = process.env[key];
+  const env = process.env[key]
   if (env) {
-    return env;
+    return env
   }
-  throw `missing env: ${key}`;
-};
+  throw `missing env: ${key}`
+}
 
 export const config = {
   redis: {
@@ -22,4 +22,4 @@ export const config = {
   ws: {
     heartbeatInterval: 30 * 1000,
   },
-};
+}
