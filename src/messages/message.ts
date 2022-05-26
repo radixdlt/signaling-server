@@ -109,7 +109,7 @@ export const sendDataToClients =
   }) =>
   (rawMessage: string) =>
     parseDataChannelMessage(rawMessage).map((message) => {
-      if (instanceId === message.connectionId) {
+      if (instanceId === message.instanceId) {
         return;
       }
 
