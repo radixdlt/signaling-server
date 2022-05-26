@@ -7,6 +7,7 @@ declare module 'ws' {
   interface WebSocket {
     isAlive: boolean;
     connectionId: string;
+    id: string;
   }
 }
 

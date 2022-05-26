@@ -86,7 +86,11 @@ export const handleIncomingMessage =
         return error;
       });
 
-type DataChannelMessage = { connectionId: string; instanceId: string };
+type DataChannelMessage = {
+  connectionId: string;
+  instanceId: string;
+  clientId: string;
+};
 
 const parseDataChannelMessage = (rawMessage: string) =>
   parseJSON<DataChannelMessage>(rawMessage).mapErr((error) => {
@@ -110,9 +114,6 @@ export const sendDataToClients =
   (rawMessage: string) =>
     parseDataChannelMessage(rawMessage).map((message) => {
       log.trace({ message, instanceId });
-      if (instanceId === message.instanceId) {
-        return;
-      }
 
       log.trace({ event: 'Subscribe', message });
 
@@ -120,7 +121,9 @@ export const sendDataToClients =
         getClients(message.connectionId).map((clients) => {
           if (data) {
             for (const client of clients) {
-              client.send(JSON.stringify({ ok: true, data }));
+              if (client.id !== message.clientId) {
+                client.send(JSON.stringify({ ok: true, data }));
+              }
             }
           }
         })

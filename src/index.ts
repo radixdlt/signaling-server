@@ -4,6 +4,7 @@ import { handleDataChannel, handleIncomingMessage, Response } from './messages';
 import { config } from './config';
 import { ErrorName } from './error';
 import { websocketServer } from './websocketServer';
+import { v4 } from 'uuid';
 
 const app = async () => {
   const redis = redisClient();
@@ -30,6 +31,7 @@ const app = async () => {
   wss.on('connection', (ws) => {
     log.trace({ event: `ClientConnected` });
 
+    ws.id = v4();
     ws.isAlive = true;
 
     ws.on('pong', () => {
@@ -41,7 +43,11 @@ const app = async () => {
         getData: redis.getData,
         setData: redis.setData,
         publish: (connectionId: string) => {
-          const message = { connectionId, instanceId: config.instanceId };
+          const message = {
+            connectionId,
+            instanceId: config.instanceId,
+            clientId: ws.id,
+          };
           log.trace({ event: 'Publish', message });
           return redis.publish(config.redis.pubSubDataChannel)(
             JSON.stringify(message)
