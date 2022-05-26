@@ -119,7 +119,7 @@ export const sendDataToClients =
         getClients(message.connectionId).map((clients) => {
           if (data) {
             for (const client of clients) {
-              client.send({ ok: true, data });
+              client.send(JSON.stringify({ ok: true, data }));
             }
           }
         })
