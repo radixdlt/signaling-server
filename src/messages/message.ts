@@ -1,16 +1,15 @@
-import { combine, ok, okAsync, Result, ResultAsync } from 'neverthrow';
+import { ResultAsync } from 'neverthrow';
 import { bufferToString, parseJSON } from '../utils';
 import { ErrorName, handleMessageError, MessageError } from '../error';
 import { RawData, WebSocketServer } from 'ws';
 import { validateMessage } from './validate';
-import { Dependencies, MessageType, MessageTypes } from './_types';
+import { Dependencies, MessageTypesObjects } from './_types';
 import { getClientsByConnectionId } from '../websocketServer';
 import { log } from '../log';
-import { config } from '../config';
 import { map, Observable } from 'rxjs';
 
 const parseMessage = (text: string) =>
-  parseJSON<MessageTypes>(text).mapErr(
+  parseJSON<MessageTypesObjects>(text).mapErr(
     handleMessageError({
       name: ErrorName.InvalidJsonError,
       errorMessage: `unable to parse message: ${text}`,
@@ -19,15 +18,15 @@ const parseMessage = (text: string) =>
 
 const handleMessage =
   ({ getData, setData, publish, send }: Dependencies) =>
-  (message: MessageTypes): ResultAsync<null | string, MessageError> => {
+  (message: MessageTypesObjects): ResultAsync<null | string, MessageError> => {
     switch (message.type) {
-      case MessageType.GetData:
+      case 'GetData':
         return getData(message.payload.connectionId)
           .mapErr(
             handleMessageError({
               message,
               name: ErrorName.GetDataError,
-              handler: MessageType.GetData,
+              handler: 'GetData',
             })
           )
           .map((data) => {
@@ -37,7 +36,7 @@ const handleMessage =
             return data;
           });
 
-      case MessageType.SetData:
+      case 'SetData':
         return setData(message.payload.connectionId, message.payload.data)
           .map(() => {
             send({ ok: true });
@@ -46,7 +45,7 @@ const handleMessage =
             handleMessageError({
               message,
               name: ErrorName.AddDataError,
-              handler: MessageType.SetData,
+              handler: 'SetData',
               errorMessage: `could not add data for connectionId: ${message.payload.connectionId}`,
             })
           )
@@ -55,7 +54,7 @@ const handleMessage =
               return handleMessageError({
                 message,
                 name: ErrorName.PublishError,
-                handler: MessageType.SetData,
+                handler: 'SetData',
                 errorMessage: `could not publish for connectionId: ${message.payload.connectionId}`,
               })(error);
             })

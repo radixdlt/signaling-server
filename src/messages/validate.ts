@@ -1,11 +1,10 @@
 import { MessageError, ErrorName } from '../error';
-import { object, string, ValidationError as YupValidationError } from 'yup';
+import { object, ValidationError as YupValidationError } from 'yup';
 import { err, ok, Result } from 'neverthrow';
-import { MessageType, MessageTypes } from './_types';
+import { MessageTypesObjects } from './_types';
+import { GetDataIO, SetDataIO } from './io-types'
 
-const validate =
-  (schema: ReturnType<typeof object>) =>
-  (message: MessageTypes): Result<MessageTypes, MessageError> => {
+const validate = (schema: ReturnType<typeof object>, message: MessageTypesObjects): Result<MessageTypesObjects, MessageError> => {
     try {
       schema.validateSync(message.payload);
       return ok(message);
@@ -19,23 +18,14 @@ const validate =
   };
 
 export const validateMessage = (
-  message: MessageTypes
-): Result<MessageTypes, MessageError> => {
+  message: MessageTypesObjects
+): Result<MessageTypesObjects, MessageError> => {
   switch (message.type) {
-    case MessageType.GetData:
-      return validate(
-        object({
-          connectionId: string().required(),
-        })
-      )(message);
+    case 'GetData':
+      return validate(GetDataIO, message);
 
-    case MessageType.SetData:
-      return validate(
-        object({
-          connectionId: string().required(),
-          data: string().required(),
-        })
-      )(message);
+    case 'SetData':
+      return validate(SetDataIO, message);
 
     default:
       return err({
