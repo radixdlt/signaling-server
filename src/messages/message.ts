@@ -109,6 +109,7 @@ export const sendDataToClients =
   }) =>
   (rawMessage: string) =>
     parseDataChannelMessage(rawMessage).map((message) => {
+      log.trace({ message, instanceId });
       if (instanceId === message.instanceId) {
         return;
       }
