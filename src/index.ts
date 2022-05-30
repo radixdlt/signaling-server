@@ -11,7 +11,7 @@ const app = async () => {
   const connection = await redis.connect()
   const wss = websocketServer()
 
-  // Crash the app if there is something wrong with the redis client connections
+  // A redis connection error at this point is most likely caused by a misconfiguration
   if (connection.isErr()) {
     throw connection.error
   }
@@ -21,7 +21,6 @@ const app = async () => {
     log.error({ errorName: 'RedisError', error })
   })
 
-  // send data to clients when new data is available
   handleDataChannel({
     wss,
     getData: redis.getData,
