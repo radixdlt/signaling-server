@@ -18,7 +18,7 @@ const app = async () => {
 
   // TODO: handle redis errors
   redis.error$.subscribe((error) => {
-    log.error({ errorName: ErrorName.RedisError, error })
+    log.error({ errorName: 'RedisError', error })
   })
 
   // send data to clients when new data is available

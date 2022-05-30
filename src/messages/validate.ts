@@ -14,7 +14,7 @@ const validate = (
   } catch (error) {
     const { errors } = error as YupValidationError
     return err({
-      name: ErrorName.ValidationError,
+      name: 'ValidationError',
       errorMessage: errors.join(', '),
     })
   }
@@ -32,7 +32,7 @@ export const validateMessage = (
 
     default:
       return err({
-        name: ErrorName.MissingTypeError,
+        name: 'MissingTypeError',
         errors: [`invalid messageType: ${message['type']}`],
       })
   }

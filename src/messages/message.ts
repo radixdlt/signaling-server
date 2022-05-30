@@ -11,7 +11,7 @@ import { map, Observable } from 'rxjs'
 const parseMessage = (text: string) =>
   parseJSON<MessageTypesObjects>(text).mapErr(
     handleMessageError({
-      name: ErrorName.InvalidJsonError,
+      name: 'InvalidJsonError',
       errorMessage: `unable to parse message: ${text}`,
     })
   )
@@ -25,7 +25,7 @@ const handleMessage =
           .mapErr(
             handleMessageError({
               message,
-              name: ErrorName.GetDataError,
+              name: 'GetDataError',
               handler: 'GetData',
             })
           )
@@ -44,7 +44,7 @@ const handleMessage =
           .mapErr(
             handleMessageError({
               message,
-              name: ErrorName.AddDataError,
+              name: 'AddDataError',
               handler: 'SetData',
               errorMessage: `could not add data for connectionId: ${message.payload.connectionId}`,
             })
@@ -53,7 +53,7 @@ const handleMessage =
             publish(message.payload.connectionId).mapErr((error) => {
               return handleMessageError({
                 message,
-                name: ErrorName.PublishError,
+                name: 'PublishError',
                 handler: 'SetData',
                 errorMessage: `could not publish for connectionId: ${message.payload.connectionId}`,
               })(error)
@@ -69,7 +69,7 @@ export const handleIncomingMessage =
   (dependencies: Dependencies) =>
   (buffer: RawData): ResultAsync<null | string, MessageError> =>
     bufferToString(buffer)
-      .mapErr(handleMessageError({ name: ErrorName.MessageConversionError }))
+      .mapErr(handleMessageError({ name: 'MessageConversionError' }))
       .andThen(parseMessage)
       .andThen(validateMessage)
       .map((message) => {
@@ -95,7 +95,7 @@ const parseDataChannelMessage = (rawMessage: string) =>
   parseJSON<DataChannelMessage>(rawMessage).mapErr((error) => {
     log.error({
       event: 'Subscribe',
-      errorName: ErrorName.InvalidJsonError,
+      errorName: 'InvalidJsonError',
       error,
     })
   })

@@ -1,18 +1,17 @@
 import { log } from './log'
 import { MessageTypes, MessageTypesObjects } from './messages'
 
-export enum ErrorName {
-  RedisError = 'RedisError',
-  MessageConversionError = 'MessageConversionError',
-  InvalidJsonError = 'InvalidJsonError',
-  AddDataError = 'AddDataError',
-  MissingTypeError = 'MissingTypeError',
-  InvalidMethodError = 'InvalidMethodError',
-  ValidationError = 'ValidationError',
-  MissingDataError = 'MissingDataError',
-  GetDataError = 'GetDataError',
-  PublishError = 'PublishError',
-}
+export type ErrorName =
+  | 'RedisError'
+  | 'MessageConversionError'
+  | 'InvalidJsonError'
+  | 'AddDataError'
+  | 'MissingTypeError'
+  | 'InvalidMethodError'
+  | 'ValidationError'
+  | 'MissingDataError'
+  | 'GetDataError'
+  | 'PublishError'
 
 export type MessageError = { name: ErrorName; errorMessage?: string }
 
