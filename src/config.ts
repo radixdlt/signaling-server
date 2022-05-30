@@ -8,11 +8,25 @@ const getEnv = (key: string) => {
   throw `missing env: ${key}`
 }
 
-export const config = {
+type Config = {
+  redis: {
+    host: string
+    password: string
+    port: number
+    pubSubDataChannel: string
+  }
+  logLevel: string
+  port: number
+  nodeEnv: string
+  instanceId: string
+  ws: { heartbeatInterval: number }
+}
+
+export const config: Config = {
   redis: {
     host: getEnv('REDIS_HOST'),
     password: getEnv('REDIS_PASSWORD'),
-    port: getEnv('REDIS_PORT'),
+    port: parseInt(getEnv('REDIS_PORT')),
     pubSubDataChannel: 'data',
   },
   logLevel: getEnv('LOG_LEVEL'),
