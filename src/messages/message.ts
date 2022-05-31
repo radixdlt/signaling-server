@@ -37,16 +37,17 @@ export const messageFns = (
 
   const handleMessage = (
     send: (value: OkResponse) => void,
-    message: MessageTypesObjects
+    message: MessageTypesObjects,
+    clientId: string
   ): ResultAsync<null | string, MessageError> => {
     switch (message.type) {
-      case 'GetData':
+      case 'getData':
         return getData(message.payload.connectionId)
           .mapErr(
             handleMessageError({
               message,
               name: 'GetDataError',
-              handler: 'GetData',
+              handler: 'getData',
             })
           )
           .map((data) => {
@@ -56,7 +57,7 @@ export const messageFns = (
             return data
           })
 
-      case 'SetData':
+      case 'setData':
         return setData(message.payload.connectionId, message.payload.data)
           .map(() => {
             send({ ok: true })
@@ -65,16 +66,22 @@ export const messageFns = (
             handleMessageError({
               message,
               name: 'AddDataError',
-              handler: 'SetData',
+              handler: 'setData',
               errorMessage: `could not add data for connectionId: ${message.payload.connectionId}`,
             })
           )
           .andThen(() =>
-            publish(message.payload.connectionId).mapErr(
+            publish(
+              JSON.stringify({
+                connectionId: message.payload.connectionId,
+                clientId,
+                instanceId,
+              })
+            ).mapErr(
               handleMessageError({
                 message,
                 name: 'PublishError',
-                handler: 'SetData',
+                handler: 'setData',
                 errorMessage: `could not publish for connectionId: ${message.payload.connectionId}`,
               })
             )
@@ -104,9 +111,9 @@ export const messageFns = (
         }
         return message
       })
-      .asyncAndThen((message) => handleMessage(send, message))
+      .asyncAndThen((message) => handleMessage(send, message, ws.id))
       .mapErr((error) => {
-        ws.send({ ok: false, error })
+        send({ ok: false, error })
         return error
       })
   }

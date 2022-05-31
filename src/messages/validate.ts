@@ -24,8 +24,8 @@ export const validateMessage = (
   message: MessageTypesObjects
 ): Result<MessageTypesObjects, MessageError> =>
   ({
-    GetData: validate(GetDataIO, message),
-    SetData: validate(GetDataIO, message),
+    getData: validate(GetDataIO, message),
+    setData: validate(GetDataIO, message),
   }[message.type] ||
   err({
     name: 'MissingTypeError',
