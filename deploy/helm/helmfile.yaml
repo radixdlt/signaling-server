@@ -43,7 +43,8 @@ releases:
   - name: turn-server
     namespace: {{ requiredEnv "NS" }}
     chart: ./turn-server
-    values: []
+    values:
+      - environments/{{ .Environment.Name }}/turn-server-values.yaml.gotmpl
   - name: signaling-server
     namespace: {{ requiredEnv "NS" }}
     chart: ./signaling-server
