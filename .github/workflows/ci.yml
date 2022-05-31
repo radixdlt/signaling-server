@@ -6,7 +6,6 @@ on:
       - 'v.*'
     branches:
       - main
-      - DO-549 # To be removed after testing
   pull_request:
     branches:
       - main
