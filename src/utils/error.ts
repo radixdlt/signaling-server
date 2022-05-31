@@ -1,5 +1,5 @@
 import { log } from './log'
-import { MessageTypes, MessageTypesObjects } from './messages'
+import { MessageTypes, MessageTypesObjects } from '../messages'
 
 export type ErrorName =
   | 'RedisError'

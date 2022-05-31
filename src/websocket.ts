@@ -1,7 +1,7 @@
-import { log } from './log'
+import { log } from './utils/log'
 import { WebSocketServer } from 'ws'
 import { config } from './config'
-import { setToArray } from './utils'
+import { setToArray } from './utils/utils'
 
 declare module 'ws' {
   interface WebSocket {

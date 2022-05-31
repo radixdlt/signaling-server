@@ -1,8 +1,8 @@
-import { MessageError, ErrorName } from '../error'
+import { MessageError } from '../utils/error'
 import { object, ValidationError as YupValidationError } from 'yup'
 import { err, ok, Result } from 'neverthrow'
 import { MessageTypesObjects } from './_types'
-import { GetDataIO, SetDataIO } from './io-types'
+import { GetDataIO } from './io-types'
 
 const validate = (
   schema: ReturnType<typeof object>,
@@ -22,18 +22,14 @@ const validate = (
 
 export const validateMessage = (
   message: MessageTypesObjects
-): Result<MessageTypesObjects, MessageError> => {
-  switch (message.type) {
-    case 'GetData':
-      return validate(GetDataIO, message)
+): Result<MessageTypesObjects, MessageError> =>
+  ({
+    GetData: validate(GetDataIO, message),
+    SetData: validate(GetDataIO, message),
+  }[message.type] ||
+  err({
+    name: 'MissingTypeError',
+    errorMessage: `invalid message type: ${message['type']}`,
+  }))
 
-    case 'SetData':
-      return validate(SetDataIO, message)
-
-    default:
-      return err({
-        name: 'MissingTypeError',
-        errors: [`invalid messageType: ${message['type']}`],
-      })
-  }
-}
+validateMessage({ type: 'GetData', payload: { connectionId: '1' } })

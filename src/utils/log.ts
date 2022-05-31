@@ -1,4 +1,4 @@
-import { config } from './config'
+import { config } from '../config'
 import pino, { LoggerOptions } from 'pino'
 
 const makeLogger = () => {

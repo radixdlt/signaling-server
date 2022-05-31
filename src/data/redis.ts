@@ -1,6 +1,6 @@
-import { log } from './log'
+import { log } from '../utils/log'
 import { createClient } from '@redis/client'
-import { config } from './config'
+import { config } from '../config'
 import { Subject } from 'rxjs'
 import { combine, ResultAsync } from 'neverthrow'
 
