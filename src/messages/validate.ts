@@ -31,5 +31,3 @@ export const validateMessage = (
     name: 'MissingTypeError',
     errorMessage: `invalid message type: ${message['type']}`,
   }))
-
-validateMessage({ type: 'GetData', payload: { connectionId: '1' } })
