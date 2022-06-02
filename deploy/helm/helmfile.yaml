@@ -1,0 +1,60 @@
+helmDefaults:
+  verify: false
+  wait: false
+  timeout: 600
+  recreatePods: false
+  force: false
+  createNamespace: {{ not (eq (env "ENVIRONMENT_NAME") "pr") }}
+repositories:
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+environments:
+  default: {}
+  dev: {}
+  pr: {}
+releases:
+  - name: redis
+    namespace: {{ requiredEnv "NS" }}
+    chart: bitnami/redis
+    version: 16.10.1
+    values:
+      - architecture: standalone
+        auth:
+          enabled: true
+          password: redis
+        master:
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 500m
+              memory: 128Mi
+          persistence:
+            enabled: true
+        replica:
+          replicaCount: 0
+        metrics:
+          enabled: true
+          serviceMonitor:
+            enabled: true
+            additionalLabels:
+              release: prometheus-operator
+  - name: turn-server
+    namespace: {{ requiredEnv "NS" }}
+    chart: ./turn-server
+    values:
+      - environments/{{ .Environment.Name }}/turn-server-values.yaml.gotmpl
+  - name: signaling-server
+    namespace: {{ requiredEnv "NS" }}
+    chart: ./signaling-server
+    values: 
+      - environments/{{ .Environment.Name }}/values.yaml.gotmpl
+      - image:
+          tag: {{ requiredEnv "IMAGE_TAG" }}
+  - name: developer-access
+    namespace: {{ requiredEnv "NS"}}
+    createNamespace: false
+    chart: ./developer-access
+    values:
+      - project: signaling-server

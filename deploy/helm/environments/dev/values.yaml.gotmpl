@@ -1,0 +1,13 @@
+ingress:
+  enabled: true
+  hosts:
+    - host: signaling-server-dev.extratools.works
+      paths:
+      - path: /
+        backend:
+          serviceName: signaling-server
+          servicePort: 4000
+  tls:
+    - secretName: self-signed-tls
+      hosts:
+        - signaling-server-dev.extratools.works

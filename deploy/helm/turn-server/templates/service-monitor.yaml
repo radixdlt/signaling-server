@@ -1,0 +1,18 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "turn-server.fullname" . }}
+  labels:
+    release: prometheus-operator
+spec:
+  endpoints:
+  - port: metrics
+    interval: {{ .Values.metrics.interval }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "turn-server.selectorLabels" . | nindent 6 }}
+{{- end }}

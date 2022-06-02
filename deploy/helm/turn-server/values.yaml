@@ -1,0 +1,47 @@
+replicaCount: 2
+
+image:
+  repository: coturn/coturn
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  hostname: turn-dev.extratools.works
+  type: LoadBalancer
+  port: 3478
+
+metrics:
+  enabled: true
+  interval: 30s
+  dashboard_url: "https://radixdlt.grafana.net/d/aegEXd97z/turn-server?orgId=1"
+  environment: "dev"
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

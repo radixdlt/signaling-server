@@ -1,0 +1,43 @@
+name: Delete PR sub-namespace
+
+on:
+  pull_request:
+    types: [ closed ]
+
+jobs:
+  delete-pr-namespace:
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1.6.1
+        with:
+          role-to-assume: arn:aws:iam::308190735829:role/gh-signaling-server-pr-deployer
+          aws-region: eu-west-2
+
+      - name: Install kubectl
+        uses: yokawasa/action-setup-kube-tools@v0.8.0
+        with:
+          setup-tools: |
+            kubectl
+          kubectl: '1.18.20'
+
+      - name: Setup cluster authentication
+        run: |
+          aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER --alias $EKS_CLUSTER
+          kubectl config get-contexts
+        env:
+          AWS_REGION: eu-west-2
+          EKS_CLUSTER: "radixdlt-dev"
+
+      - name: Delete PR subnamespace
+        run: |
+          RESOURCE_NAMESPACE=signaling-server-pr-${{ github.event.pull_request.number }}
+
+          helm uninstall signaling-server -n $RESOURCE_NAMESPACE
+
+          kubectl delete subns $RESOURCE_NAMESPACE -n signaling-server-ci-pr

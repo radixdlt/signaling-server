@@ -1,0 +1,13 @@
+ingress:
+  enabled: true
+  hosts:
+    - host: {{ requiredEnv "NS" }}.extratools.works
+      paths:
+      - path: /
+        backend:
+          serviceName: signaling-server
+          servicePort: 4000
+  tls:
+    - secretName: self-signed-tls
+      hosts:
+        - {{ requiredEnv "NS" }}.extratools.works
