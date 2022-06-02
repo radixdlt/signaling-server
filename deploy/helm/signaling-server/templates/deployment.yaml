@@ -34,7 +34,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["node"]
-          args: ["build/index.js"]
+          args: ["build/server.js"]
           env:
             - name: LOG_LEVEL
               value: {{ .Values.server.logLevel | quote }}
