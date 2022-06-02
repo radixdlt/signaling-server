@@ -16,7 +16,7 @@ releases:
   - name: redis
     namespace: {{ requiredEnv "NS" }}
     chart: bitnami/redis
-    version: 14.8.7
+    version: 16.10.1
     values:
       - architecture: standalone
         auth:
