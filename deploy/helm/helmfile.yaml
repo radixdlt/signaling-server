@@ -4,7 +4,7 @@ helmDefaults:
   timeout: 600
   recreatePods: false
   force: false
-  createNamespace: {{ not (eq (env "ENVIRONMENT_NAME") "pr") }}
+  createNamespace: false
 repositories:
   - name: bitnami
     url: https://charts.bitnami.com/bitnami
@@ -54,7 +54,6 @@ releases:
           tag: {{ requiredEnv "IMAGE_TAG" }}
   - name: developer-access
     namespace: {{ requiredEnv "NS"}}
-    createNamespace: false
     chart: ./developer-access
     values:
       - project: signaling-server
