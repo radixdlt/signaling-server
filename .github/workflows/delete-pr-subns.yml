@@ -32,7 +32,7 @@ jobs:
           kubectl config get-contexts
         env:
           AWS_REGION: eu-west-2
-          EKS_CLUSTER: "radixdlt-dev"
+          EKS_CLUSTER: "rdx-works-main-dev"
 
       - name: Delete PR subnamespace
         run: |

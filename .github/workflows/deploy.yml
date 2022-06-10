@@ -92,4 +92,4 @@ jobs:
           ENVIRONMENT_NAME: ${{ inputs.env_name }}
           IMAGE_TAG: ${{ inputs.image_tag }}
           AWS_REGION: ${{ inputs.aws_region }}
-          EKS_CLUSTER: radixdlt-dev
+          EKS_CLUSTER: rdx-works-main-dev
