@@ -1,7 +1,7 @@
 import { ResultAsync } from 'neverthrow'
 import { bufferToString, parseJSON } from '../utils/utils'
 import { handleMessageError, MessageError } from '../utils/error'
-import { RawData, WebSocketServer } from 'ws'
+import { RawData } from 'ws'
 import { validateMessage } from './validate'
 import { MessageTypesObjects } from './_types'
 import { getClientsByConnectionId } from '../websocket'
@@ -41,13 +41,13 @@ export const messageFns = (
     clientId: string
   ): ResultAsync<null | string, MessageError> => {
     switch (message.type) {
-      case 'getData':
-        return getData(message.payload.connectionId)
+      case 'offer':
+        return getData(message.connectionId)
           .mapErr(
             handleMessageError({
               message,
               name: 'GetDataError',
-              handler: 'getData',
+              handler: 'offer',
             })
           )
           .map((data) => {
@@ -57,35 +57,36 @@ export const messageFns = (
             return data
           })
 
-      case 'setData':
-        return setData(message.payload.connectionId, message.payload.data)
-          .map(() => {
-            send({ ok: true })
-          })
-          .mapErr(
-            handleMessageError({
-              message,
-              name: 'AddDataError',
-              handler: 'setData',
-              errorMessage: `could not add data for connectionId: ${message.payload.connectionId}`,
+      case 'answer':
+        if ('payload' in message)
+          return setData(message.connectionId, message.payload.sdp)
+            .map(() => {
+              send({ ok: true })
             })
-          )
-          .andThen(() =>
-            publish(
-              JSON.stringify({
-                connectionId: message.payload.connectionId,
-                clientId,
-                instanceId,
-              })
-            ).mapErr(
+            .mapErr(
               handleMessageError({
                 message,
-                name: 'PublishError',
-                handler: 'setData',
-                errorMessage: `could not publish for connectionId: ${message.payload.connectionId}`,
+                name: 'AddDataError',
+                handler: 'answer',
+                errorMessage: `could not add data for connectionId: ${message.connectionId}`,
               })
             )
-          )
+            .andThen(() =>
+              publish(
+                JSON.stringify({
+                  connectionId: message.connectionId,
+                  clientId,
+                  instanceId,
+                })
+              ).mapErr(
+                handleMessageError({
+                  message,
+                  name: 'PublishError',
+                  handler: 'answer',
+                  errorMessage: `could not publish for connectionId: ${message.connectionId}`,
+                })
+              )
+            )
 
       default:
         throw new Error(`handler missing for messageType: ${message['type']}`)
@@ -106,8 +107,8 @@ export const messageFns = (
       .andThen(parseMessage)
       .andThen(validateMessage)
       .map((message) => {
-        if (message.payload.connectionId) {
-          ws.connectionId = message.payload.connectionId
+        if (message.connectionId) {
+          ws.connectionId = message.connectionId
         }
         return message
       })

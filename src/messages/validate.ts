@@ -2,14 +2,14 @@ import { MessageError } from '../utils/error'
 import { object, ZodError } from 'zod'
 import { err, ok, Result } from 'neverthrow'
 import { MessageTypesObjects } from './_types'
-import { GetDataIO } from './io-types'
+import { GetDataIO, SetDataIO } from './io-types'
 
 const validate = (
   schema: ReturnType<typeof object>,
   message: MessageTypesObjects
 ): Result<MessageTypesObjects, MessageError> => {
   try {
-    schema.parse(message.payload)
+    schema.parse(message)
     return ok(message)
   } catch (error) {
     const { errors } = error as ZodError
@@ -24,8 +24,8 @@ export const validateMessage = (
   message: MessageTypesObjects
 ): Result<MessageTypesObjects, MessageError> =>
   ({
-    getData: validate(GetDataIO, message),
-    setData: validate(GetDataIO, message),
+    offer: validate(GetDataIO, message),
+    answer: validate(SetDataIO, message),
   }[message.type] ||
   err({
     name: 'MissingTypeError',
