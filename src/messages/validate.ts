@@ -1,5 +1,5 @@
 import { MessageError } from '../utils/error'
-import { object, ValidationError as YupValidationError } from 'yup'
+import { object, ZodError } from 'zod'
 import { err, ok, Result } from 'neverthrow'
 import { MessageTypesObjects } from './_types'
 import { GetDataIO } from './io-types'
@@ -9,10 +9,10 @@ const validate = (
   message: MessageTypesObjects
 ): Result<MessageTypesObjects, MessageError> => {
   try {
-    schema.validateSync(message.payload)
+    schema.parse(message.payload)
     return ok(message)
   } catch (error) {
-    const { errors } = error as YupValidationError
+    const { errors } = error as ZodError
     return err({
       name: 'ValidationError',
       errorMessage: errors.join(', '),

@@ -1,13 +1,13 @@
-import { InferType, object, string } from 'yup'
+import { z, object, string } from 'zod'
 
 export const GetDataIO = object({
-  connectionId: string().required(),
+  connectionId: string(),
 })
 
 export const SetDataIO = object({
-  connectionId: string().required(),
-  data: string().required(),
+  connectionId: string(),
+  data: string(),
 })
 
-export type GetData = InferType<typeof GetDataIO>
-export type SetData = InferType<typeof SetDataIO>
+export type GetData = z.infer<typeof GetDataIO>
+export type SetData = z.infer<typeof SetDataIO>
