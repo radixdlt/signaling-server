@@ -46,13 +46,17 @@ export const redisClient = () => {
       })
     })
 
-  const setData = (key: string, value: string): ResultAsync<null, Error> =>
-    ResultAsync.fromPromise(client.set(key, value), (e) => e as Error).map(
+  const setData = (key: string, value: string): ResultAsync<null, Error> => {
+    log.info(`setting data with key ${key} and value ${value}`)
+    return ResultAsync.fromPromise(client.set(key, value), (e) => e as Error).map(
       () => null
     )
+  }
 
-  const getData = (key: string) =>
-    ResultAsync.fromPromise(client.get(key), (e) => e as Error)
+  const getData = (key: string) => {
+    log.info(`getting data with key ${key}`)
+    return ResultAsync.fromPromise(client.get(key), (e) => e as Error)
+  }
 
   return {
     isConnected: client.isOpen,

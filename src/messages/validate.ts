@@ -3,6 +3,7 @@ import { object, ZodError } from 'zod'
 import { err, ok, Result } from 'neverthrow'
 import { MessageTypesObjects } from './_types'
 import { AnswerIO, IceCandidateIO, OfferIO } from './io-types'
+import { log } from 'utils/log'
 
 const validate = (
   schema: ReturnType<typeof object>,
@@ -13,6 +14,7 @@ const validate = (
     return ok(message)
   } catch (error) {
     const { errors } = error as ZodError
+    log.error(`Validation failed for message: ${JSON.stringify(message, null, 2)}`)
     return err({
       name: 'ValidationError',
       errorMessage: errors.join(', '),
