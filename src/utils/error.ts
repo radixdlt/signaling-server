@@ -4,6 +4,7 @@ import { MessageTypes, MessageTypesObjects } from '../messages'
 export type ErrorName =
   | 'RedisError'
   | 'MessageConversionError'
+  | 'MessageParsingError'
   | 'InvalidJsonError'
   | 'AddDataError'
   | 'MissingTypeError'

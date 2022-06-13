@@ -1,7 +1,7 @@
 import { ResultAsync } from 'neverthrow'
 import { bufferToString, parseJSON } from '../utils/utils'
 import { handleMessageError, MessageError } from '../utils/error'
-import { RawData, WebSocketServer } from 'ws'
+import { RawData } from 'ws'
 import { validateMessage } from './validate'
 import { MessageTypesObjects } from './_types'
 import { getClientsByConnectionId } from '../websocket'
@@ -19,6 +19,30 @@ type DataChannelMessage = {
   instanceId: string
   clientId: string
 }
+
+const handleGetDataError = (message: MessageTypesObjects) =>
+  handleMessageError({
+    message,
+    name: 'GetDataError',
+    handler: message.type,
+    errorMessage: `could not get data for connectionId: ${message.connectionId}`,
+  })
+
+const handleSetDataError = (message: MessageTypesObjects) =>
+  handleMessageError({
+    message,
+    name: 'AddDataError',
+    handler: message.type,
+    errorMessage: `could not set data for connectionId: ${message.connectionId}`,
+  })
+
+const handlePublishError = (message: MessageTypesObjects) =>
+  handleMessageError({
+    message,
+    name: 'PublishError',
+    handler: message.type,
+    errorMessage: `could not publish for connectionId: ${message.connectionId}`,
+  })
 
 export const messageFns = (
   dataHandlers: ReturnType<typeof dataFns>,
@@ -41,15 +65,9 @@ export const messageFns = (
     clientId: string
   ): ResultAsync<null | string, MessageError> => {
     switch (message.type) {
-      case 'getData':
-        return getData(message.payload.connectionId)
-          .mapErr(
-            handleMessageError({
-              message,
-              name: 'GetDataError',
-              handler: 'getData',
-            })
-          )
+      case 'offer':
+        return getData(message.connectionId)
+          .mapErr(handleGetDataError(message))
           .map((data) => {
             if (data) {
               send({ ok: true, data })
@@ -57,34 +75,36 @@ export const messageFns = (
             return data
           })
 
-      case 'setData':
-        return setData(message.payload.connectionId, message.payload.data)
+      case 'answer':
+        return setData(message.connectionId, message.payload.sdp)
           .map(() => {
             send({ ok: true })
           })
-          .mapErr(
-            handleMessageError({
-              message,
-              name: 'AddDataError',
-              handler: 'setData',
-              errorMessage: `could not add data for connectionId: ${message.payload.connectionId}`,
-            })
-          )
+          .mapErr(handleSetDataError(message))
           .andThen(() =>
             publish(
               JSON.stringify({
-                connectionId: message.payload.connectionId,
+                connectionId: message.connectionId,
                 clientId,
                 instanceId,
               })
-            ).mapErr(
-              handleMessageError({
-                message,
-                name: 'PublishError',
-                handler: 'setData',
-                errorMessage: `could not publish for connectionId: ${message.payload.connectionId}`,
+            ).mapErr(handlePublishError(message))
+          )
+
+      case 'iceCandidate':
+        return setData(message.connectionId, JSON.stringify(message.payload))
+          .map(() => {
+            send({ ok: true })
+          })
+          .mapErr(handleSetDataError(message))
+          .andThen(() =>
+            publish(
+              JSON.stringify({
+                connectionId: message.connectionId,
+                clientId,
+                instanceId,
               })
-            )
+            ).mapErr(handlePublishError(message))
           )
 
       default:
@@ -106,8 +126,8 @@ export const messageFns = (
       .andThen(parseMessage)
       .andThen(validateMessage)
       .map((message) => {
-        if (message.payload.connectionId) {
-          ws.connectionId = message.payload.connectionId
+        if (message.connectionId) {
+          ws.connectionId = message.connectionId
         }
         return message
       })

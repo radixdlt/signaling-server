@@ -1,7 +1,7 @@
-import { ResultAsync } from 'neverthrow'
+import { redisClient } from './redis'
 
 export const dataFns = (
-  getData: (key: string) => ResultAsync<string | null, Error>,
-  setData: (key: string, value: string) => ResultAsync<null, Error>,
-  publish: (message: string) => ResultAsync<null, Error>
+  getData: ReturnType<typeof redisClient>['getData'],
+  setData: ReturnType<typeof redisClient>['setData'],
+  publish: ReturnType<ReturnType<typeof redisClient>['publish']>
 ) => ({ getData, setData, publish })

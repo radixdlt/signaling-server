@@ -1,18 +1,20 @@
 import { MessageError } from '../utils/error'
-import { object, ValidationError as YupValidationError } from 'yup'
+import { object, ZodError } from 'zod'
 import { err, ok, Result } from 'neverthrow'
 import { MessageTypesObjects } from './_types'
-import { GetDataIO } from './io-types'
+import { AnswerIO, IceCandidateIO, OfferIO } from './io-types'
+import { log } from 'utils/log'
 
 const validate = (
   schema: ReturnType<typeof object>,
   message: MessageTypesObjects
 ): Result<MessageTypesObjects, MessageError> => {
   try {
-    schema.validateSync(message.payload)
+    schema.parse(message)
     return ok(message)
   } catch (error) {
-    const { errors } = error as YupValidationError
+    const { errors } = error as ZodError
+    log.error(`Validation failed for message: ${JSON.stringify(message, null, 2)}`)
     return err({
       name: 'ValidationError',
       errorMessage: errors.join(', '),
@@ -23,10 +25,11 @@ const validate = (
 export const validateMessage = (
   message: MessageTypesObjects
 ): Result<MessageTypesObjects, MessageError> =>
-  ({
-    getData: validate(GetDataIO, message),
-    setData: validate(GetDataIO, message),
-  }[message.type] ||
+({
+  offer: validate(OfferIO, message),
+  answer: validate(AnswerIO, message),
+  iceCandidate: validate(IceCandidateIO, message)
+}[message.type] ||
   err({
     name: 'MissingTypeError',
     errorMessage: `invalid message type: ${message['type']}`,
