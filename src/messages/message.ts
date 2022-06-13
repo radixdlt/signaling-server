@@ -9,6 +9,7 @@ import { log } from '../utils/log'
 import { map, Observable } from 'rxjs'
 import { WebSocket } from 'ws'
 import { dataFns } from '../data'
+import { MessageType } from './io-types'
 
 type OkResponse = { ok: true; data?: string }
 type ErrorResponse = { ok: false; error: MessageError }
@@ -19,6 +20,27 @@ type DataChannelMessage = {
   instanceId: string
   clientId: string
 }
+
+const handleGetDataError = (message: MessageTypesObjects) => handleMessageError({
+  message,
+  name: 'GetDataError',
+  handler: message.type,
+  errorMessage: `could not get data for connectionId: ${message.connectionId}`,
+})
+
+const handleSetDataError = (message: MessageTypesObjects) => handleMessageError({
+  message,
+  name: 'AddDataError',
+  handler: message.type,
+  errorMessage: `could not set data for connectionId: ${message.connectionId}`,
+})
+
+const handlePublishError = (message: MessageTypesObjects) => handleMessageError({
+  message,
+  name: 'PublishError',
+  handler: message.type,
+  errorMessage: `could not publish for connectionId: ${message.connectionId}`,
+})
 
 export const messageFns = (
   dataHandlers: ReturnType<typeof dataFns>,
@@ -41,15 +63,9 @@ export const messageFns = (
     clientId: string
   ): ResultAsync<null | string, MessageError> => {
     switch (message.type) {
-      case 'offer':
+      case MessageType.OFFER:
         return getData(message.connectionId)
-          .mapErr(
-            handleMessageError({
-              message,
-              name: 'GetDataError',
-              handler: 'offer',
-            })
-          )
+          .mapErr(handleGetDataError(message))
           .map((data) => {
             if (data) {
               send({ ok: true, data })
@@ -57,36 +73,37 @@ export const messageFns = (
             return data
           })
 
-      case 'answer':
-        if ('payload' in message)
-          return setData(message.connectionId, message.payload.sdp)
-            .map(() => {
-              send({ ok: true })
-            })
-            .mapErr(
-              handleMessageError({
-                message,
-                name: 'AddDataError',
-                handler: 'answer',
-                errorMessage: `could not add data for connectionId: ${message.connectionId}`,
+      case MessageType.ANSWER:
+        return setData(message.connectionId, message.payload.sdp)
+          .map(() => {
+            send({ ok: true })
+          })
+          .mapErr(handleSetDataError(message))
+          .andThen(() =>
+            publish(
+              JSON.stringify({
+                connectionId: message.connectionId,
+                clientId,
+                instanceId,
               })
-            )
-            .andThen(() =>
-              publish(
-                JSON.stringify({
-                  connectionId: message.connectionId,
-                  clientId,
-                  instanceId,
-                })
-              ).mapErr(
-                handleMessageError({
-                  message,
-                  name: 'PublishError',
-                  handler: 'answer',
-                  errorMessage: `could not publish for connectionId: ${message.connectionId}`,
-                })
-              )
-            )
+            ).mapErr(handlePublishError(message))
+          )
+
+      case MessageType.ICE:
+        return setData(message.connectionId, JSON.stringify(message.payload))
+          .map(() => {
+            send({ ok: true })
+          })
+          .mapErr(handleSetDataError(message))
+          .andThen(() =>
+            publish(
+              JSON.stringify({
+                connectionId: message.connectionId,
+                clientId,
+                instanceId,
+              })
+            ).mapErr(handlePublishError(message))
+          )
 
       default:
         throw new Error(`handler missing for messageType: ${message['type']}`)

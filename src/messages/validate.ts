@@ -2,7 +2,7 @@ import { MessageError } from '../utils/error'
 import { object, ZodError } from 'zod'
 import { err, ok, Result } from 'neverthrow'
 import { MessageTypesObjects } from './_types'
-import { GetDataIO, SetDataIO } from './io-types'
+import { AnswerIO, IceCandidateIO, OfferIO } from './io-types'
 
 const validate = (
   schema: ReturnType<typeof object>,
@@ -23,10 +23,11 @@ const validate = (
 export const validateMessage = (
   message: MessageTypesObjects
 ): Result<MessageTypesObjects, MessageError> =>
-  ({
-    offer: validate(GetDataIO, message),
-    answer: validate(SetDataIO, message),
-  }[message.type] ||
+({
+  offer: validate(OfferIO, message),
+  answer: validate(AnswerIO, message),
+  iceCandidate: validate(IceCandidateIO, message)
+}[message.type] ||
   err({
     name: 'MissingTypeError',
     errorMessage: `invalid message type: ${message['type']}`,

@@ -1,4 +1,4 @@
-import { GetData, SetData } from './io-types'
-export { MessageTypes } from './io-types'
+import { Answer, IceCandidate, Offer } from './io-types'
+export { MessageType } from './io-types'
 
-export type MessageTypesObjects = GetData | SetData
+export type MessageTypesObjects = Answer | Offer | IceCandidate

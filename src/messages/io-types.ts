@@ -1,10 +1,20 @@
-import { z, object, string, union, literal } from 'zod'
+import { z, object, string, union, literal, number } from 'zod'
 
-const MessageTypes = union([literal('offer'), literal('answer')])
+export enum MessageType {
+  OFFER = 'offer',
+  ANSWER = 'answer',
+  ICE = 'iceCandidate'
+}
 
-export const SetDataIO = object({
+const MessageTypeSchema = {
+  offer: literal(MessageType.OFFER),
+  answer: literal(MessageType.ANSWER),
+  ice: literal(MessageType.ICE)
+}
+
+export const AnswerIO = object({
   requestId: string(),
-  type: MessageTypes,
+  type: MessageTypeSchema.answer,
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
   payload: object({
@@ -12,13 +22,25 @@ export const SetDataIO = object({
   }),
 })
 
-export const GetDataIO = object({
+export const OfferIO = object({
   requestId: string(),
-  type: union([literal('offer'), literal('answer')]),
+  type: MessageTypeSchema.offer,
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
 })
 
-export type GetData = z.infer<typeof GetDataIO>
-export type SetData = z.infer<typeof SetDataIO>
-export type MessageTypes = z.infer<typeof MessageTypes>
+export const IceCandidateIO = object({
+  requestId: string(),
+  type: MessageTypeSchema.ice,
+  source: union([literal('android'), literal('extension'), literal('iOS')]),
+  connectionId: string(),
+  payload: object({
+    candidate: string(),
+    sdpMid: string(),
+    sdpMLineIndex: number()
+  })
+})
+
+export type Answer = z.infer<typeof AnswerIO>
+export type Offer = z.infer<typeof OfferIO>
+export type IceCandidate = z.infer<typeof IceCandidateIO>
