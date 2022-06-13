@@ -1,5 +1,5 @@
 import { log } from './log'
-import { MessageType, MessageTypesObjects } from '../messages'
+import { MessageTypes, MessageTypesObjects } from '../messages'
 
 export type ErrorName =
   | 'RedisError'
@@ -26,7 +26,7 @@ export const handleMessageError =
     name: ErrorName
     errorMessage?: string
     message?: MessageTypesObjects
-    handler?: MessageType
+    handler?: MessageTypes
   }) =>
   (jsError: Error): MessageError => {
     log.error({
