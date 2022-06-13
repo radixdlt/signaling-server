@@ -1,20 +1,14 @@
 import { z, object, string, union, literal, number } from 'zod'
 
-export enum MessageType {
-  OFFER = 'offer',
-  ANSWER = 'answer',
-  ICE = 'iceCandidate'
-}
+const Offer = literal('offer')
+const Answer = literal('answer')
+const Ice = literal('iceCandidate')
 
-const MessageTypeSchema = {
-  offer: literal(MessageType.OFFER),
-  answer: literal(MessageType.ANSWER),
-  ice: literal(MessageType.ICE)
-}
+const Types = union([Offer, Answer, Ice])
 
 export const AnswerIO = object({
   requestId: string(),
-  type: MessageTypeSchema.answer,
+  type: Answer,
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
   payload: object({
@@ -24,23 +18,24 @@ export const AnswerIO = object({
 
 export const OfferIO = object({
   requestId: string(),
-  type: MessageTypeSchema.offer,
+  type: Offer,
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
 })
 
 export const IceCandidateIO = object({
   requestId: string(),
-  type: MessageTypeSchema.ice,
+  type: Ice,
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
   payload: object({
     candidate: string(),
     sdpMid: string(),
-    sdpMLineIndex: number()
-  })
+    sdpMLineIndex: number(),
+  }),
 })
 
 export type Answer = z.infer<typeof AnswerIO>
 export type Offer = z.infer<typeof OfferIO>
 export type IceCandidate = z.infer<typeof IceCandidateIO>
+export type MessageTypes = z.infer<typeof Types>
