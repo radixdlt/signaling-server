@@ -21,6 +21,9 @@ export const OfferIO = object({
   type: Offer,
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
+  payload: object({
+    sdp: string(),
+  }),
 })
 
 export const IceCandidateIO = object({
