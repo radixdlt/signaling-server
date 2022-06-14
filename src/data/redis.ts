@@ -23,7 +23,7 @@ export const redisClient = () => {
     ResultAsync.fromPromise(
       publisher.publish(channel, message),
       (e) => e as Error
-    ).map(() => null)
+    ).map(() => undefined)
 
   const connectClient = (
     name: string,
@@ -46,16 +46,20 @@ export const redisClient = () => {
       })
     })
 
-  const setData = (key: string, value: string): ResultAsync<null, Error> => {
+  const setData = (key: string, value: string) => {
     log.info(`setting data with key ${key} and value ${value}`)
-    return ResultAsync.fromPromise(client.set(key, value), (e) => e as Error).map(
-      () => null
+    return ResultAsync.fromPromise(
+      client.set(key, value).then((res) => res || undefined),
+      (e) => e as Error
     )
   }
 
   const getData = (key: string) => {
     log.info(`getting data with key ${key}`)
-    return ResultAsync.fromPromise(client.get(key), (e) => e as Error)
+    return ResultAsync.fromPromise(
+      client.get(key).then((res) => res || undefined),
+      (e) => e as Error
+    )
   }
 
   return {
