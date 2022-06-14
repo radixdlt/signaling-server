@@ -9,6 +9,7 @@ import { log } from '../utils/log'
 import { map, Observable } from 'rxjs'
 import { WebSocket } from 'ws'
 import { dataFns } from '../data'
+import { SubmitOffer } from './io-types'
 
 type OkResponse = { ok: true; data?: string }
 type ErrorResponse = { ok: false; error: MessageError }
@@ -19,22 +20,31 @@ type DataChannelMessage = {
   instanceId: string
   clientId: string
 }
-
-const handleGetDataError = (message: MessageTypesObjects) =>
+const handleSubmitError = (message: MessageTypesObjects) => 
   handleMessageError({
     message,
-    name: 'GetDataError',
+    name: 'SubmitError',
     handler: message.type,
     errorMessage: `could not get data for connectionId: ${message.connectionId}`,
   })
 
-const handleSetDataError = (message: MessageTypesObjects) =>
-  handleMessageError({
-    message,
-    name: 'AddDataError',
-    handler: message.type,
-    errorMessage: `could not set data for connectionId: ${message.connectionId}`,
-  })
+
+// const handleGetDataError = (message: MessageTypesObjects) =>
+//   handleMessageError({
+//     message,
+//     name: 'GetDataError',
+//     handler: message.type,
+//     errorMessage: `could not get data for connectionId: ${message.connectionId}`,
+//   })
+
+// const handleSetDataError = (message: MessageTypesObjects) =>
+//   handleMessageError({
+//     message,
+//     name: 'AddDataError',
+//     handler: message.type,
+//     errorMessage: `could not set data for connectionId: ${message.connectionId}`,
+//   })
+
 
 const handlePublishError = (message: MessageTypesObjects) =>
   handleMessageError({
@@ -43,6 +53,7 @@ const handlePublishError = (message: MessageTypesObjects) =>
     handler: message.type,
     errorMessage: `could not publish for connectionId: ${message.connectionId}`,
   })
+  
 
 export const messageFns = (
   dataHandlers: ReturnType<typeof dataFns>,
@@ -65,20 +76,10 @@ export const messageFns = (
     clientId: string
   ): ResultAsync<null | string, MessageError> => {
     switch (message.type) {
-      case 'offer':
-        return getData(message.connectionId)
-          .mapErr(handleGetDataError(message))
-          .map((data) => {
-            if (data) {
-              send({ ok: true, data })
-            }
-            return data
-          })
-
-      case 'answer':
+      case 'submitOffer':
         return setData(message.connectionId, message.payload.sdp)
           .map(() => {
-            send({ ok: true })
+            send({ accepted: message })
           })
           .mapErr(handleSetDataError(message))
           .andThen(() =>
@@ -91,10 +92,10 @@ export const messageFns = (
             ).mapErr(handlePublishError(message))
           )
 
-      case 'iceCandidate':
-        return setData(message.connectionId, JSON.stringify(message.payload))
+      case 'submitAnswer':
+        return setData(message.connectionId, message.payload.sdp)
           .map(() => {
-            send({ ok: true })
+            send({ accepted: message })
           })
           .mapErr(handleSetDataError(message))
           .andThen(() =>
@@ -106,6 +107,28 @@ export const messageFns = (
               })
             ).mapErr(handlePublishError(message))
           )
+
+      case 'submitIceCandidate':
+        return setData(message.connectionId, JSON.stringify(message.payload))
+          .map(() => {
+            send({ accepted: message })
+          })
+          .mapErr(handleSetDataError(message))
+          .andThen(() =>
+            publish(
+              JSON.stringify({
+                connectionId: message.connectionId,
+                clientId,
+                instanceId,
+              })
+            ).mapErr(handlePublishError(message))
+          )
+
+		  case 'subscribe':
+			return getData(message.connectionId).map((what) => {
+				send({accepted: message})
+			})
+			.mapErr(handleSetDataError(message))
 
       default:
         throw new Error(`handler missing for messageType: ${message['type']}`)
@@ -131,9 +154,12 @@ export const messageFns = (
         }
         return message
       })
-      .asyncAndThen((message) => handleMessage(send, message, ws.id))
-      .mapErr((error) => {
-        send({ ok: false, error })
+      .asyncAndThen((message) => { 
+		return handleMessage(send, message, ws.id)
+			.mapErr((e) => { ...message, error: e }) 
+	  })
+      .mapErr((messageIntactWithError) => {
+        send(messageIntactWithError)
         return error
       })
   }

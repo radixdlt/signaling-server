@@ -1,4 +1,4 @@
-import { Answer, IceCandidate, Offer } from './io-types'
+import { Subscribe, SubmitAnswer, SubmitIceCandidate, SubmitOffer } from './io-types'
 export { MessageTypes } from './io-types'
 
-export type MessageTypesObjects = Answer | Offer | IceCandidate
+export type MessageTypesObjects = Subscribe | SubmitAnswer | SubmitOffer | SubmitIceCandidate

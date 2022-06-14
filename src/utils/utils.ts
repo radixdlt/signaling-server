@@ -4,7 +4,7 @@ export const bufferToString = (
   buffer: Buffer | ArrayBuffer | Buffer[]
 ): Result<string, Error> => {
   try {
-    return ok(buffer.toString())
+    return ok(buffer.toString('utf8'))
   } catch (error) {
     return err(error as Error)
   }

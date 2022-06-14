@@ -2,7 +2,7 @@ import { MessageError } from '../utils/error'
 import { object, ZodError } from 'zod'
 import { err, ok, Result } from 'neverthrow'
 import { MessageTypesObjects } from './_types'
-import { AnswerIO, IceCandidateIO, OfferIO } from './io-types'
+import { SubmitAnswerIO, SubmitIceCandidateIO, SubmitOfferIO, SubscribeIO } from './io-types'
 import { log } from 'utils/log'
 
 const validate = (
@@ -26,9 +26,10 @@ export const validateMessage = (
   message: MessageTypesObjects
 ): Result<MessageTypesObjects, MessageError> =>
 ({
-  offer: validate(OfferIO, message),
-  answer: validate(AnswerIO, message),
-  iceCandidate: validate(IceCandidateIO, message)
+  subscribe: validate(SubscribeIO, message),
+  submitOffer: validate(SubmitOfferIO, message),
+  submitAnswer: validate(SubmitAnswerIO, message),
+  submitIceCandidate: validate(SubmitIceCandidateIO, message),
 }[message.type] ||
   err({
     name: 'MissingTypeError',

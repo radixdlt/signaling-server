@@ -6,16 +6,20 @@ export type ErrorName =
   | 'MessageConversionError'
   | 'MessageParsingError'
   | 'InvalidJsonError'
-  | 'AddDataError'
   | 'MissingTypeError'
   | 'InvalidMethodError'
   | 'ValidationError'
   | 'MissingDataError'
-  | 'GetDataError'
   | 'PublishError'
+//   | 'SubmitAnswerError'
+//   | 'SubmitOfferError'
+//   | 'SubmitIceCandidateError'
+| 'SubmitError'
+  | 'SubscribeError'
 
 export type MessageError = { name: ErrorName; errorMessage?: string }
 
+// We want this method to return the incoming message INTACT (as is), but ornament "inject" an "error" prop into it, can be an object with an error type and a message
 export const handleMessageError =
   ({
     message,
