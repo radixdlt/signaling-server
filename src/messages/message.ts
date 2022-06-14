@@ -4,7 +4,7 @@ import { handleMessageError, MessageError } from '../utils/error'
 import { RawData } from 'ws'
 import { validateMessage } from './validate'
 import { MessageTypesObjects } from './_types'
-import { getClientsByConnectionId } from '../websocket'
+import { getClientsByConnectionId, websocketServer } from '../websocket'
 import { log } from '../utils/log'
 import { map, Observable } from 'rxjs'
 import { WebSocket } from 'ws'
@@ -106,6 +106,10 @@ export const messageFns = (
           )
 
 		  case 'subscribe':
+			!! BEWARE this is making the assumption that `getData` is really `subscribeToAllFutureMessages` as a websocket should do.
+			!! I have NOT verified this! This might very well be incorrectly implemented, and rather be a REST client that is talking RPC over 
+			!! websocket. So start by verifying that `getData` indeed will create a channel that passes through all messages for the corresponding
+			!! connectionID
 			return getData(message.connectionId).map((what) => {
 				send({accepted: message})
 			})
