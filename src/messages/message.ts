@@ -9,7 +9,6 @@ import { log } from '../utils/log'
 import { map, Observable } from 'rxjs'
 import { WebSocket } from 'ws'
 import { dataFns } from '../data'
-import { SubmitOffer } from './io-types'
 
 type OkResponse = { ok: true; data?: string }
 type ErrorResponse = { ok: false; error: MessageError }
@@ -27,24 +26,6 @@ const handleSubmitError = (message: MessageTypesObjects) =>
     handler: message.type,
     errorMessage: `could not get data for connectionId: ${message.connectionId}`,
   })
-
-
-// const handleGetDataError = (message: MessageTypesObjects) =>
-//   handleMessageError({
-//     message,
-//     name: 'GetDataError',
-//     handler: message.type,
-//     errorMessage: `could not get data for connectionId: ${message.connectionId}`,
-//   })
-
-// const handleSetDataError = (message: MessageTypesObjects) =>
-//   handleMessageError({
-//     message,
-//     name: 'AddDataError',
-//     handler: message.type,
-//     errorMessage: `could not set data for connectionId: ${message.connectionId}`,
-//   })
-
 
 const handlePublishError = (message: MessageTypesObjects) =>
   handleMessageError({
@@ -81,7 +62,7 @@ export const messageFns = (
           .map(() => {
             send({ accepted: message })
           })
-          .mapErr(handleSetDataError(message))
+          .mapErr(handleSubmitError(message))
           .andThen(() =>
             publish(
               JSON.stringify({
@@ -97,7 +78,7 @@ export const messageFns = (
           .map(() => {
             send({ accepted: message })
           })
-          .mapErr(handleSetDataError(message))
+          .mapErr(handleSubmitError(message))
           .andThen(() =>
             publish(
               JSON.stringify({
@@ -113,7 +94,7 @@ export const messageFns = (
           .map(() => {
             send({ accepted: message })
           })
-          .mapErr(handleSetDataError(message))
+          .mapErr(handleSubmitError(message))
           .andThen(() =>
             publish(
               JSON.stringify({
@@ -128,7 +109,7 @@ export const messageFns = (
 			return getData(message.connectionId).map((what) => {
 				send({accepted: message})
 			})
-			.mapErr(handleSetDataError(message))
+			.mapErr { ... HANDLE! }
 
       default:
         throw new Error(`handler missing for messageType: ${message['type']}`)
