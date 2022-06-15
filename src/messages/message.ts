@@ -61,7 +61,7 @@ export const messageFns = (
     clientId: string
   ): ResultAsync<undefined | string, MessageError> => {
     switch (message.type) {
-      case 'offer':
+      case 'subscribe':
         return getData(message.connectionId)
           .mapErr(handleGetDataError(message))
           .map((data) => {
@@ -70,6 +70,22 @@ export const messageFns = (
             }
             return data
           })
+
+      case 'offer':
+        return setData(message.connectionId, message.payload.sdp)
+          .map((data) => {
+            send(data)
+          })
+          .mapErr(handleSetDataError(message))
+          .andThen(() =>
+            publish(
+              JSON.stringify({
+                connectionId: message.connectionId,
+                clientId,
+                instanceId,
+              })
+            ).mapErr(handlePublishError(message))
+          )
 
       case 'answer':
         return setData(message.connectionId, message.payload.sdp)
