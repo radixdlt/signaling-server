@@ -10,6 +10,10 @@ import { map, Observable } from 'rxjs'
 import { WebSocket } from 'ws'
 import { dataFns } from '../data'
 
+type OkResponse = { ok: true; data?: string }
+type ErrorResponse = { ok: false; error: MessageError }
+export type Response = OkResponse | ErrorResponse
+
 type DataChannelMessage = {
   connectionId: string
   instanceId: string
@@ -56,17 +60,17 @@ export const messageFns = (
     )
 
   const handleMessage = (
-    send: (value?: string) => void,
+    send: (value: OkResponse) => void,
     message: MessageTypesObjects,
     clientId: string
-  ): ResultAsync<undefined | string, MessageError> => {
+  ): ResultAsync<null | string, MessageError> => {
     switch (message.type) {
       case 'subscribe':
         return getData(message.connectionId)
           .mapErr(handleGetDataError(message))
           .map((data) => {
             if (data) {
-              send(data)
+              send({ ok: true, data })
             }
             return data
           })
@@ -89,8 +93,8 @@ export const messageFns = (
 
       case 'answer':
         return setData(message.connectionId, message.payload.sdp)
-          .map((data) => {
-            send(data)
+          .map(() => {
+            send({ ok: true })
           })
           .mapErr(handleSetDataError(message))
           .andThen(() =>
@@ -105,8 +109,8 @@ export const messageFns = (
 
       case 'iceCandidate':
         return setData(message.connectionId, JSON.stringify(message.payload))
-          .map((data) => {
-            send(data)
+          .map(() => {
+            send({ ok: true })
           })
           .mapErr(handleSetDataError(message))
           .andThen(() =>
@@ -127,10 +131,10 @@ export const messageFns = (
   const handleIncomingMessage = (
     ws: WebSocket,
     buffer: RawData
-  ): ResultAsync<undefined | string, MessageError> => {
-    const send = (response?: string) => {
+  ): ResultAsync<null | string, MessageError> => {
+    const send = (response: Response) => {
       log.trace({ event: 'Send', response })
-      return ws.send(response)
+      return ws.send(JSON.stringify(response))
     }
 
     return bufferToString(buffer)
@@ -145,7 +149,7 @@ export const messageFns = (
       })
       .asyncAndThen((message) => handleMessage(send, message, ws.id))
       .mapErr((error) => {
-        send(JSON.stringify({ error: error.errorMessage }))
+        send({ ok: false, error })
         return error
       })
   }
@@ -172,7 +176,7 @@ export const messageFns = (
               if (data) {
                 for (const client of clients) {
                   if (client.id !== message.clientId) {
-                    client.send(data)
+                    client.send(JSON.stringify({ ok: true, data }))
                   }
                 }
               }
