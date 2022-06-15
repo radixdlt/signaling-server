@@ -8,13 +8,9 @@ const Subscribe = literal('subscribe')
 const Types = union([Offer, Answer, Ice, Subscribe])
 
 export const SubscribeIO = object({
-  requestId: string(),
   type: Subscribe,
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
-  payload: object({
-    sdp: string(),
-  }),
 })
 
 export const AnswerIO = object({

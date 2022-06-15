@@ -77,8 +77,8 @@ export const messageFns = (
 
       case 'offer':
         return setData(message.connectionId, message.payload.sdp)
-          .map((data) => {
-            send({ ok: true, data })
+          .map(() => {
+            send({ ok: true, data: JSON.stringify(message) })
           })
           .mapErr(handleSetDataError(message))
           .andThen(() =>
@@ -94,7 +94,7 @@ export const messageFns = (
       case 'answer':
         return setData(message.connectionId, message.payload.sdp)
           .map(() => {
-            send({ ok: true })
+            send({ ok: true, data: JSON.stringify(message) })
           })
           .mapErr(handleSetDataError(message))
           .andThen(() =>
@@ -110,7 +110,7 @@ export const messageFns = (
       case 'iceCandidate':
         return setData(message.connectionId, JSON.stringify(message.payload))
           .map(() => {
-            send({ ok: true })
+            send({ ok: true, data: JSON.stringify(message) })
           })
           .mapErr(handleSetDataError(message))
           .andThen(() =>
