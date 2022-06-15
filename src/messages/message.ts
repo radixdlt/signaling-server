@@ -63,7 +63,7 @@ export const messageFns = (
     send: (value: OkResponse) => void,
     message: MessageTypesObjects,
     clientId: string
-  ): ResultAsync<null | string, MessageError> => {
+  ): ResultAsync<undefined | string, MessageError> => {
     switch (message.type) {
       case 'subscribe':
         return getData(message.connectionId)
@@ -78,7 +78,7 @@ export const messageFns = (
       case 'offer':
         return setData(message.connectionId, message.payload.sdp)
           .map((data) => {
-            send(data)
+            send({ ok: true, data })
           })
           .mapErr(handleSetDataError(message))
           .andThen(() =>
@@ -131,7 +131,7 @@ export const messageFns = (
   const handleIncomingMessage = (
     ws: WebSocket,
     buffer: RawData
-  ): ResultAsync<null | string, MessageError> => {
+  ): ResultAsync<undefined | string, MessageError> => {
     const send = (response: Response) => {
       log.trace({ event: 'Send', response })
       return ws.send(JSON.stringify(response))
