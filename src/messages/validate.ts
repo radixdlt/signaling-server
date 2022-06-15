@@ -13,13 +13,12 @@ const validate = (
     schema.parse(message)
     return ok(message)
   } catch (error) {
-    const { errors } = error as ZodError
     log.error(
       `Validation failed for message: ${JSON.stringify(message, null, 2)}`
     )
     return err({
       name: 'ValidationError',
-      errorMessage: errors.join(', '),
+      data: JSON.stringify(message),
     })
   }
 }
@@ -35,5 +34,5 @@ export const validateMessage = (
   }[message.type] ||
   err({
     name: 'MissingTypeError',
-    errorMessage: `invalid message type: ${message['type']}`,
+    data: JSON.stringify(message),
   }))
