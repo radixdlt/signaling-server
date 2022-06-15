@@ -11,6 +11,7 @@ export const SubscribeIO = object({
   type: Subscribe,
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
+  requestId: string(),
 })
 
 export const AnswerIO = object({
