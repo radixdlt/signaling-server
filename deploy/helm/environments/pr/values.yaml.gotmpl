@@ -1,7 +1,7 @@
 ingress:
   enabled: true
   hosts:
-    - host: {{ requiredEnv "NS" }}.radixdlt-dev.extratools.works
+    - host: {{ requiredEnv "NS" }}.rdx-works-main.extratools.works
       paths:
       - path: /
         backend:
@@ -10,4 +10,4 @@ ingress:
   tls:
     - secretName: self-signed-tls
       hosts:
-        - {{ requiredEnv "NS" }}.radixdlt-dev.extratools.works
+        - {{ requiredEnv "NS" }}.rdx-works-main.extratools.works
