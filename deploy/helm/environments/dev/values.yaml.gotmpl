@@ -1,7 +1,7 @@
 ingress:
   enabled: true
   hosts:
-    - host: signaling-server-dev.extratools.works
+    - host: signaling-server-dev.rdx-works-main.extratools.works
       paths:
       - path: /
         backend:
@@ -10,4 +10,4 @@ ingress:
   tls:
     - secretName: self-signed-tls
       hosts:
-        - signaling-server-dev.extratools.works
+        - signaling-server-dev.rdx-works-main.extratools.works
