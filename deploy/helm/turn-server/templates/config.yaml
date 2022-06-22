@@ -9,9 +9,14 @@ data:
     log-file=stdout
     pidfile=/var/tmp/turnserver.pid
     listening-port={{ .Values.service.port }}
-    realm=turn-dev.extratools.works
+    realm={{ .Values.service.hostname }}
+    server-name=turnserver
 
     redis-userdb="ip=redis-master.{{ .Release.Namespace }}.svc.cluster.local dbname=coturn password=redis port=6379 connect_timeout=30"
 
+    listening-ip=0.0.0.0
     fingerprint
     no-cli
+    verbose
+    no-tls
+    no-dtls
