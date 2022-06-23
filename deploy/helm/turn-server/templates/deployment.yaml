@@ -47,6 +47,9 @@ spec:
             - name: turn-tcp
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+            - name: turn-udp
+              containerPort: {{ .Values.service.port }}
+              protocol: UDP
             - name: metrics
               containerPort: 9641
               protocol: TCP
