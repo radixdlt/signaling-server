@@ -1,6 +1,9 @@
 up:
 	docker-compose up -d
 
+up-test:
+	docker-compose -f ./docker-compose.yml -f ./docker-compose.test.yml up -d 
+
 up-build:
 	docker-compose up -d --build
 
@@ -9,3 +12,6 @@ logs:
 
 down: 
 	docker-compose down
+
+down-test: 
+	docker-compose -f ./docker-compose.yml -f ./docker-compose.test.yml down

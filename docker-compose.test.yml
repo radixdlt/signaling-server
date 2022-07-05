@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  signaling-server-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - ./src:/home/node/app/src
+      - ./nodemon.json:/home/node/app/nodemon.json
+    container_name: signaling-server-2
+    expose:
+      - '4001'
+    ports:
+      - '4001:4001'
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+      PORT: 4001
+      LOG_LEVEL: trace
+      NODE_ENV: dev
+    command: npm run dev
+    depends_on:
+      - redis
