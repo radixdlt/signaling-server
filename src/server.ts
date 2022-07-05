@@ -3,6 +3,20 @@ import { messageFns } from './messages'
 import { websocketServer } from './websocket/websocket-server'
 import { v4 } from 'uuid'
 import { redisClient } from './data'
+import express from 'express'
+import { config } from './config'
+import client from 'prom-client'
+
+const collectDefaultMetrics = client.collectDefaultMetrics
+collectDefaultMetrics()
+
+const app = express()
+
+app.listen(config.healthCheckPort)
+
+app.get('/health', (req, res) => {
+  res.send()
+})
 
 const server = async () => {
   const redis = redisClient()
