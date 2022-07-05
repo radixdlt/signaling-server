@@ -1,24 +1,16 @@
 import { log } from './utils/log'
 import { messageFns } from './messages'
-import { config } from './config'
-import { getClientsByConnectionId, websocketServer } from './websocket'
+import { websocketServer } from './websocket/websocket-server'
 import { v4 } from 'uuid'
-import { dataFns, redisClient } from './data'
+import { redisClient } from './data'
 
 const server = async () => {
   const redis = redisClient()
   const connection = await redis.connect()
-  const wss = websocketServer()
-  const getClients = getClientsByConnectionId(wss)
-  const dataHandlers = dataFns(
-    redis.getData,
-    redis.setData,
-    redis.publish(config.redis.pubSubDataChannel)
-  )
+  const { wss, getClientsByConnectionId } = websocketServer()
   const { handleIncomingMessage, handleDataChannel } = messageFns(
-    dataHandlers,
-    config.instanceId,
-    getClients
+    redis.publish,
+    getClientsByConnectionId
   )
 
   // A redis connection error at this point is most likely caused by a misconfiguration
@@ -34,7 +26,7 @@ const server = async () => {
   handleDataChannel(redis.data$).subscribe()
 
   wss.on('connection', (ws) => {
-    log.trace({ event: `ClientConnected` })
+    log.trace({ event: `ClientConnected`, clientConnected: wss.clients.size })
 
     ws.id = v4()
     ws.isAlive = true
@@ -46,6 +38,13 @@ const server = async () => {
     ws.on('message', async (messageBuffer) => {
       await handleIncomingMessage(ws, messageBuffer)
     })
+
+    ws.onclose = () => {
+      log.info({
+        event: 'ClientDisconnected',
+        clientConnected: wss.clients.size,
+      })
+    }
   })
 }
 

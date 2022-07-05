@@ -19,11 +19,14 @@ export const redisClient = () => {
     errorSubject.next(err)
   })
 
-  const publish = (channel: string) => (message: string) =>
+  const publish = (
+    channel: string,
+    message: string
+  ): ResultAsync<void, Error> =>
     ResultAsync.fromPromise(
       publisher.publish(channel, message),
       (e) => e as Error
-    ).map(() => undefined)
+    ).map((r) => undefined)
 
   const connectClient = (
     name: string,
@@ -46,27 +49,8 @@ export const redisClient = () => {
       })
     })
 
-  const setData = (key: string, value: string) => {
-    log.info(`setting data with key ${key} and value ${value}`)
-    return ResultAsync.fromPromise(
-      client.set(key, value).then((res) => res || undefined),
-      (e) => e as Error
-    )
-  }
-
-  const getData = (key: string) => {
-    log.info(`getting data with key ${key}`)
-    return ResultAsync.fromPromise(
-      client.get(key).then((res) => res || undefined),
-      (e) => e as Error
-    )
-  }
-
   return {
-    isConnected: client.isOpen,
     connect,
-    setData,
-    getData,
     publish,
     error$: errorSubject.asObservable(),
     data$: dataSubject.asObservable(),

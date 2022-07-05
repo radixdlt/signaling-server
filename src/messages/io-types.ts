@@ -8,7 +8,7 @@ const Subscribe = literal('subscribe')
 const Types = union([Offer, Answer, Ice, Subscribe])
 
 export const SubscribeIO = object({
-  type: Subscribe,
+  method: Subscribe,
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
   requestId: string(),
@@ -16,34 +16,26 @@ export const SubscribeIO = object({
 
 export const AnswerIO = object({
   requestId: string(),
-  type: Answer,
+  method: Answer,
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
-  payload: object({
-    sdp: string(),
-  }),
+  encryptedPayload: string(),
 })
 
 export const OfferIO = object({
   requestId: string(),
-  type: Offer,
+  method: Offer,
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
-  payload: object({
-    sdp: string(),
-  }),
+  encryptedPayload: string(),
 })
 
 export const IceCandidateIO = object({
   requestId: string(),
-  type: Ice,
+  method: Ice,
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
-  payload: object({
-    candidate: string(),
-    sdpMid: string(),
-    sdpMLineIndex: number(),
-  }),
+  encryptedPayload: string(),
 })
 
 export type Answer = z.infer<typeof AnswerIO>

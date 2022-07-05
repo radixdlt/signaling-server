@@ -1,7 +1,6 @@
-import { log } from './utils/log'
-import { WebSocketServer } from 'ws'
-import { config } from './config'
-import { setToArray } from './utils/utils'
+import { WebSocketServer, WebSocket } from 'ws'
+import { config } from '../config'
+import { setToArray } from '../utils/utils'
 
 declare module 'ws' {
   interface WebSocket {
@@ -12,11 +11,8 @@ declare module 'ws' {
 }
 
 const handleClientHeartbeat = (wss: WebSocketServer) => () => {
-  log.trace({ event: 'Heartbeat', clientsConnected: wss.clients.size })
-
   wss.clients.forEach((ws) => {
     if (ws.isAlive === false) {
-      log.trace({ event: 'ClientTimeout' })
       return ws.terminate()
     }
 
@@ -38,11 +34,10 @@ export const websocketServer = () => {
     clearInterval(heartbeatInterval)
   })
 
-  return wss
-}
-
-export const getClientsByConnectionId =
-  (wss: WebSocketServer) => (connectionId: string) =>
-    setToArray(wss.clients).map((clients) =>
+  const getClientsByConnectionId = (connectionId: string) =>
+    setToArray<WebSocket>(wss.clients).map((clients) =>
       clients.filter((client) => client.connectionId === connectionId)
     )
+
+  return { wss, getClientsByConnectionId }
+}
