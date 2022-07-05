@@ -1,5 +1,7 @@
+{{ $SIG_SRV_NS := .Values.ci.namespace }}
+
 service:
-  hostname: turn-dev-{{ requiredEnv "NS" }}.rdx-works-main.extratools.works
+  hostname: turn-dev-{{ $SIG_SRV_NS }}.rdx-works-main.extratools.works
 
 metrics:
   environment: "pr"

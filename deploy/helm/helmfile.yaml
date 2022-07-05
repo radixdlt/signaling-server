@@ -13,8 +13,10 @@ environments:
   dev: {}
   pr: {}
 releases:
+{{ $SIG_SRV_NS := .Values.ci.namespace }}
+{{ $SIG_SRV_IMAGE_TAG := .Values.ci.tag }}
   - name: redis
-    namespace: {{ requiredEnv "NS" }}
+    namespace: {{ $SIG_SRV_NS }}
     chart: bitnami/redis
     version: 16.10.1
     values:
@@ -41,19 +43,19 @@ releases:
             additionalLabels:
               release: prometheus-operator
   - name: turn-server
-    namespace: {{ requiredEnv "NS" }}
+    namespace: {{ $SIG_SRV_NS }}
     chart: ./turn-server
     values:
       - environments/{{ .Environment.Name }}/turn-server-values.yaml.gotmpl
   - name: signaling-server
-    namespace: {{ requiredEnv "NS" }}
+    namespace: {{ $SIG_SRV_NS }}
     chart: ./signaling-server
     values: 
       - environments/{{ .Environment.Name }}/values.yaml.gotmpl
       - image:
-          tag: {{ requiredEnv "IMAGE_TAG" }}
+          tag: {{ $SIG_SRV_IMAGE_TAG }}
   - name: developer-access
-    namespace: {{ requiredEnv "NS"}}
+    namespace: {{ $SIG_SRV_NS}}
     chart: ./developer-access
     values:
       - project: signaling-server

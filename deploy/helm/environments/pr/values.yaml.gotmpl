@@ -1,7 +1,9 @@
+{{ $SIG_SRV_NS := .Values.ci.namespace }}
+
 ingress:
   enabled: true
   hosts:
-    - host: {{ requiredEnv "NS" }}.rdx-works-main.extratools.works
+    - host: {{ $SIG_SRV_NS }}.rdx-works-main.extratools.works
       paths:
       - path: /
         backend:
@@ -10,4 +12,4 @@ ingress:
   tls:
     - secretName: self-signed-tls
       hosts:
-        - {{ requiredEnv "NS" }}.rdx-works-main.extratools.works
+        - {{ $SIG_SRV_NS }}.rdx-works-main.extratools.works
