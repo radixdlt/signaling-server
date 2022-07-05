@@ -12,11 +12,11 @@ collectDefaultMetrics()
 
 const app = express()
 
-app.listen(config.healthCheckPort)
-
 app.get('/health', (req, res) => {
   res.send()
 })
+
+app.listen(config.healthCheckPort)
 
 const server = async () => {
   const redis = redisClient()

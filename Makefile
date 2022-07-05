@@ -4,6 +4,9 @@ up:
 up-test:
 	docker-compose -f ./docker-compose.yml -f ./docker-compose.test.yml up -d 
 
+up-test-build:
+	docker-compose -f ./docker-compose.yml -f ./docker-compose.test.yml up -d --build
+
 up-build:
 	docker-compose up -d --build
 
