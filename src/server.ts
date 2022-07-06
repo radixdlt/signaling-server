@@ -3,22 +3,14 @@ import { messageFns } from './messages'
 import { websocketServer } from './websocket/websocket-server'
 import { v4 } from 'uuid'
 import { redisClient } from './data'
-import express from 'express'
-import { config } from './config'
 import client from 'prom-client'
+import { exposeHealthCheckEndpoint } from './health-check'
 
 const collectDefaultMetrics = client.collectDefaultMetrics
 collectDefaultMetrics()
 
-const app = express()
-
-app.get('/health', (req, res) => {
-  res.send()
-})
-
-app.listen(config.healthCheckPort)
-
 const server = async () => {
+  exposeHealthCheckEndpoint()
   const redis = redisClient()
   const connection = await redis.connect()
   const { wss, getClientsByConnectionId } = websocketServer()
