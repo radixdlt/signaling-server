@@ -23,14 +23,18 @@ const validate = (
 
 export const validateMessage = (
   message: MessageTypesObjects
-): Result<MessageTypesObjects, MessageError> =>
-  ({
-    subscribe: () => validate(SubscribeIO, message),
-    offer: () => validate(OfferIO, message),
-    answer: () => validate(AnswerIO, message),
-    iceCandidate: () => validate(IceCandidateIO, message),
-  }[message.method]() ||
-  err({
-    name: 'MissingMethodError',
-    data: message,
-  }))
+): Result<MessageTypesObjects, MessageError> => {
+  switch (message.method) {
+    case 'subscribe':
+      return validate(SubscribeIO, message)
+    case 'offer':
+      return validate(OfferIO, message)
+    case 'answer':
+      return validate(AnswerIO, message)
+    case 'iceCandidate':
+      return validate(IceCandidateIO, message)
+
+    default:
+      return err({ name: 'MissingMethodError', errorMessage: 'invalid method' })
+  }
+}
