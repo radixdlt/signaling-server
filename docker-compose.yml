@@ -12,10 +12,8 @@ services:
     container_name: signaling-server
     expose:
       - '4000'
-      - '4100'
     ports:
       - '4000:4000'
-      - '4100:4100'
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -23,7 +21,6 @@ services:
       PORT: 4000
       LOG_LEVEL: trace
       NODE_ENV: dev
-      HEALTH_CHECK_PORT: 4100
     command: npm run dev
     depends_on:
       - redis

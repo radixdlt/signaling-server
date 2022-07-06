@@ -1,6 +1,28 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import { config } from '../config'
 import { setToArray } from '../utils/utils'
+import http from 'http'
+
+import client from 'prom-client'
+import { log } from '../utils/log'
+
+const collectDefaultMetrics = client.collectDefaultMetrics
+collectDefaultMetrics()
+
+const httpServer = http.createServer(async (req, res) => {
+  if (req.url === '/health') {
+    res.writeHead(200)
+    res.end('ok')
+  } else if (req.url === '/metrics') {
+    res.writeHead(200)
+    const metrics = await client.register.getMetricsAsJSON()
+    res.end(JSON.stringify(metrics))
+  } else {
+    res.writeHead(404)
+    res.end()
+  }
+})
+httpServer.listen(config.port)
 
 declare module 'ws' {
   interface WebSocket {
@@ -22,7 +44,7 @@ const handleClientHeartbeat = (wss: WebSocketServer) => () => {
 }
 
 export const websocketServer = () => {
-  const wss = new WebSocketServer({ port: config.port })
+  const wss = new WebSocketServer({ server: httpServer })
 
   // ping clients to check if connection is still active
   const heartbeatInterval = setInterval(

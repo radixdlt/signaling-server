@@ -20,7 +20,6 @@ type Config = {
   nodeEnv: string
   instanceId: string
   ws: { heartbeatInterval: number }
-  healthCheckPort: number
 }
 
 export const config: Config = {
@@ -37,5 +36,4 @@ export const config: Config = {
   ws: {
     heartbeatInterval: 30 * 1000,
   },
-  healthCheckPort: parseInt(getEnv('HEALTH_CHECK_PORT')),
 }
