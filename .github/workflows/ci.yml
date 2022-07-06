@@ -102,13 +102,12 @@ jobs:
     with:
       env_name: dev
       namespace: signaling-server-dev
-      image_tag: "${{ needs.build.outputs.tag }}"
+      create_subns: false
       aws_region: eu-west-2
       role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-dev-deployer
       eks_cluster: rdx-works-main-dev
       helmfile_extra_vars: >-
         ci.tag=${{ needs.build.outputs.tag }},
-        ci.namespace=signaling-server-dev,
         ci.environment=dev
 
   deploy_pull_request:
@@ -121,14 +120,11 @@ jobs:
       env_name: pr
       hierarchical_namespace: signaling-server-ci-pr
       namespace: signaling-server-pr-${{ github.event.number }}
-      pr_number: ${{ github.event.number }}
-      create_subns: "true"
-      image_tag: "${{ needs.build.outputs.tag }}"
+      create_subns: true
       aws_region: eu-west-2
       role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-pr-deployer
       eks_cluster: rdx-works-main-dev
       helmfile_extra_vars: >-
         ci.tag=${{ needs.build.outputs.tag }},
         ci.prNumber=${{ github.event.number }},
-        ci.namespace=signaling-server-pr-${{ github.event.number }},
         ci.environment=pr

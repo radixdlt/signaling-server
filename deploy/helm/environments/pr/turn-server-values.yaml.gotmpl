@@ -1,4 +1,4 @@
-{{ $SIG_SRV_NS := .Values.ci.namespace }}
+{{ $SIG_SRV_NS := .Namespace }}
 
 service:
   hostname: turn-dev-{{ $SIG_SRV_NS }}.rdx-works-main.extratools.works

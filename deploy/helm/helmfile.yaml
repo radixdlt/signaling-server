@@ -13,7 +13,7 @@ environments:
   dev: {}
   pr: {}
 releases:
-{{ $SIG_SRV_NS := .Values.ci.namespace }}
+{{ $SIG_SRV_NS := .Namespace }}
 {{ $SIG_SRV_IMAGE_TAG := .Values.ci.tag }}
   - name: redis
     namespace: {{ $SIG_SRV_NS }}
