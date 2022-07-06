@@ -4,7 +4,6 @@ import { setToArray } from '../utils/utils'
 import http from 'http'
 
 import client from 'prom-client'
-import { log } from '../utils/log'
 
 const collectDefaultMetrics = client.collectDefaultMetrics
 collectDefaultMetrics()
