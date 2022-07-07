@@ -2,7 +2,7 @@ import client from 'prom-client'
 
 export const connectedClientsGauge = new client.Gauge({
   name: 'connected_clients',
-  help: 'the number of connect client',
+  help: 'the number of connected clients',
 })
 
 export const incomingMessageCounter = new client.Counter({
