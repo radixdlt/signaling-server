@@ -2,7 +2,6 @@ import { connectedClientsGauge } from '../metrics/metrics'
 import { WebSocketServer, WebSocket } from 'ws'
 import { config } from '../config'
 import { setToArray } from '../utils/utils'
-import { httpServer } from '../http/http-server'
 
 declare module 'ws' {
   interface WebSocket {
@@ -25,7 +24,7 @@ const handleClientHeartbeat = (wss: WebSocketServer) => () => {
 }
 
 export const websocketServer = () => {
-  const wss = new WebSocketServer({ server: httpServer })
+  const wss = new WebSocketServer({ port: config.wsPort })
 
   // ping clients to check if connection is still active
   const heartbeatInterval = setInterval(

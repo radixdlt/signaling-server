@@ -8,6 +8,7 @@ import {
   incomingMessageCounter,
   prometheusClient,
 } from './metrics/metrics'
+import './http/http-server'
 
 const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
 collectDefaultMetrics()

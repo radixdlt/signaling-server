@@ -8,12 +8,12 @@ export const httpServer = http.createServer(async (req, res) => {
     res.end('ok')
   } else if (req.url === '/metrics') {
     res.writeHead(200)
-    const metrics = await prometheusClient.register.getMetricsAsJSON()
-    res.end(JSON.stringify(metrics))
+    const metrics = await prometheusClient.register.metrics()
+    res.end(metrics)
   } else {
     res.writeHead(404)
     res.end()
   }
 })
 
-httpServer.listen(config.port)
+httpServer.listen(config.httpPort)

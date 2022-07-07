@@ -11,14 +11,17 @@ services:
       - ./nodemon.json:/home/node/app/nodemon.json
     container_name: signaling-server-2
     expose:
-      - '4001'
+      - '4100'
+      - '4101'
     ports:
-      - '4001:4001'
+      - '4100:4100'
+      - '4101:4101'
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-      PORT: 4001
+      WS_PORT: 4100
+      HTTP_PORT: 4101
       LOG_LEVEL: trace
       NODE_ENV: dev
     command: npm run dev
