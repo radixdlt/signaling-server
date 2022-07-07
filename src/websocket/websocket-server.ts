@@ -1,27 +1,8 @@
+import { connectedClientsGauge } from '../metrics/metrics'
 import { WebSocketServer, WebSocket } from 'ws'
 import { config } from '../config'
 import { setToArray } from '../utils/utils'
-import http from 'http'
-
-import client from 'prom-client'
-
-const collectDefaultMetrics = client.collectDefaultMetrics
-collectDefaultMetrics()
-
-const httpServer = http.createServer(async (req, res) => {
-  if (req.url === '/health') {
-    res.writeHead(200)
-    res.end('ok')
-  } else if (req.url === '/metrics') {
-    res.writeHead(200)
-    const metrics = await client.register.getMetricsAsJSON()
-    res.end(JSON.stringify(metrics))
-  } else {
-    res.writeHead(404)
-    res.end()
-  }
-})
-httpServer.listen(config.port)
+import { httpServer } from '../http/http-server'
 
 declare module 'ws' {
   interface WebSocket {
@@ -34,6 +15,7 @@ declare module 'ws' {
 const handleClientHeartbeat = (wss: WebSocketServer) => () => {
   wss.clients.forEach((ws) => {
     if (ws.isAlive === false) {
+      connectedClientsGauge.dec()
       return ws.terminate()
     }
 

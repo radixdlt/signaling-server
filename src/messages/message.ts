@@ -8,6 +8,7 @@ import { log } from '../utils/log'
 import { map, Observable } from 'rxjs'
 import { WebSocket } from 'ws'
 import { config } from '../config'
+import { outgoingMessageCounter } from '../metrics/metrics'
 
 type ValidResponse = { valid: MessageTypesObjects }
 type ErrorResponse = { ok: false; error: MessageError }
@@ -55,6 +56,7 @@ export const messageFns = (
   const handleIncomingMessage = (ws: WebSocket, buffer: RawData) => {
     const sendMessage = (response: Response | MessageError) => {
       log.trace({ event: 'Send', response })
+      outgoingMessageCounter.inc()
       return ws.send(JSON.stringify(response))
     }
 
@@ -89,6 +91,7 @@ export const messageFns = (
               if (client.id !== message.clientId) {
                 log.info({ event: 'Send', message: message.data })
                 client.send(JSON.stringify(message.data))
+                outgoingMessageCounter.inc()
               }
             }
           })

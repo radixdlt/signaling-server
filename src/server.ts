@@ -3,6 +3,14 @@ import { messageFns } from './messages'
 import { websocketServer } from './websocket/websocket-server'
 import { v4 } from 'uuid'
 import { redisClient } from './data'
+import {
+  connectedClientsGauge,
+  incomingMessageCounter,
+  prometheusClient,
+} from './metrics/metrics'
+
+const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
+collectDefaultMetrics()
 
 const server = async () => {
   const redis = redisClient()
@@ -27,6 +35,7 @@ const server = async () => {
 
   wss.on('connection', (ws) => {
     log.trace({ event: `ClientConnected`, clientConnected: wss.clients.size })
+    connectedClientsGauge.inc()
 
     ws.id = v4()
     ws.isAlive = true
@@ -36,11 +45,13 @@ const server = async () => {
     })
 
     ws.on('message', async (messageBuffer) => {
+      incomingMessageCounter.inc()
       await handleIncomingMessage(ws, messageBuffer)
     })
 
     ws.onclose = () => {
-      log.info({
+      connectedClientsGauge.dec()
+      log.trace({
         event: 'ClientDisconnected',
         clientConnected: wss.clients.size,
       })
