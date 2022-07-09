@@ -90,3 +90,10 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+metrics:
+  enabled: true
+  port: 4001
+  serviceMonitor:
+    path: /metrics
+    interval: 15s

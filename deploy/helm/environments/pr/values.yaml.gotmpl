@@ -13,3 +13,8 @@ ingress:
     - secretName: self-signed-tls
       hosts:
         - {{ $SIG_SRV_NS }}.rdx-works-main.extratools.works
+
+metrics:
+  alert_labels:
+    env: pr
+    cluster: rdx-works-main-dev
