@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: base
     volumes:
       - ./src:/home/node/app/src
       - ./nodemon.json:/home/node/app/nodemon.json
@@ -22,9 +21,9 @@ services:
       REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
       WS_PORT: 4000
       HTTP_PORT: 4001
-      LOG_LEVEL: info
-      NODE_ENV: dev
-    command: npm run dev
+      LOG_LEVEL: trace
+      NODE_ENV: prod
+    command: npm start
     depends_on:
       - redis
   redis:
@@ -39,3 +38,8 @@ services:
 volumes:
   redisData:
     driver: local
+
+networks:
+  default:
+    external:
+      name: signaling-server

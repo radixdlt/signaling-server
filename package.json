@@ -4,31 +4,39 @@
   "description": "WebRTC signaling server",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_PATH=./build node build/server.js",
+    "start": "NODE_PATH=./build node --max-old-space-size=8192 build/server.js",
     "build": "tsc -p .",
     "dev": "nodemon src/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha -r ts-node/register 'src/**/*.test.ts'",
+    "test:watch": "mocha -r ts-node/register --watch --watch-files src 'src/**/*.test.ts'",
     "lint": "yarn prettier --write src"
   },
   "author": "Alex Stelea <alex.stelea@rdx.works>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "nodemon": "^2.0.16",
-    "prettier": "^2.6.2",
-    "ts-node": "^10.7.0",
-    "typescript": "^4.6.4"
+    "@types/chai": "^4.3.1",
+    "@types/mocha": "^9.1.1",
+    "@types/sinon": "^10.0.12",
+    "chai": "^4.3.6",
+    "mocha": "^10.0.0",
+    "nodemon": "^2.0.19",
+    "prettier": "^2.7.1",
+    "sinon": "^14.0.0",
+    "ts-node": "^10.8.2",
+    "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@redis/client": "^1.1.0",
+    "@redis/client": "^1.2.0",
     "@types/pino": "^7.0.5",
     "@types/uuid": "^8.3.4",
     "@types/ws": "^8.5.3",
     "neverthrow": "^4.3.1",
-    "pino": "^7.11.0",
-    "pino-pretty": "^7.6.1",
+    "pino": "^8.1.0",
+    "pino-pretty": "^8.1.0",
+    "prom-client": "^14.0.1",
     "rxjs": "^7.5.5",
     "uuid": "^8.3.2",
-    "ws": "^8.6.0",
+    "ws": "^8.8.0",
     "zod": "^3.17.3"
   }
 }

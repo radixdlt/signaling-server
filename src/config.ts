@@ -16,7 +16,8 @@ type Config = {
     pubSubDataChannel: string
   }
   logLevel: string
-  port: number
+  wsPort: number
+  httpPort: number
   nodeEnv: string
   instanceId: string
   ws: { heartbeatInterval: number }
@@ -30,7 +31,8 @@ export const config: Config = {
     pubSubDataChannel: 'data',
   },
   logLevel: getEnv('LOG_LEVEL'),
-  port: parseInt(getEnv('PORT')),
+  wsPort: parseInt(getEnv('WS_PORT')),
+  httpPort: parseInt(getEnv('HTTP_PORT')),
   nodeEnv: getEnv('NODE_ENV'),
   instanceId: v4(),
   ws: {

@@ -13,6 +13,7 @@ export type ErrorName =
   | 'MissingDataError'
   | 'GetDataError'
   | 'PublishError'
+  | 'MissingMethodError'
 
 export type MessageError = { name: ErrorName; errorMessage?: string }
 

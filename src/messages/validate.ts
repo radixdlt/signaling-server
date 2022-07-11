@@ -1,9 +1,9 @@
 import { MessageError } from '../utils/error'
-import { object, ZodError } from 'zod'
+import { object } from 'zod'
 import { err, ok, Result } from 'neverthrow'
 import { MessageTypesObjects } from './_types'
-import { AnswerIO, IceCandidateIO, OfferIO } from './io-types'
-import { log } from 'utils/log'
+import { AnswerIO, IceCandidateIO, OfferIO, SubscribeIO } from './io-types'
+import { log } from '../utils/log'
 
 const validate = (
   schema: ReturnType<typeof object>,
@@ -13,24 +13,28 @@ const validate = (
     schema.parse(message)
     return ok(message)
   } catch (error) {
-    const { errors } = error as ZodError
-    log.error(`Validation failed for message: ${JSON.stringify(message, null, 2)}`)
+    log.error({ event: 'ValidationError', error })
     return err({
       name: 'ValidationError',
-      errorMessage: errors.join(', '),
+      error,
     })
   }
 }
 
 export const validateMessage = (
   message: MessageTypesObjects
-): Result<MessageTypesObjects, MessageError> =>
-({
-  offer: validate(OfferIO, message),
-  answer: validate(AnswerIO, message),
-  iceCandidate: validate(IceCandidateIO, message)
-}[message.type] ||
-  err({
-    name: 'MissingTypeError',
-    errorMessage: `invalid message type: ${message['type']}`,
-  }))
+): Result<MessageTypesObjects, MessageError> => {
+  switch (message.method) {
+    case 'subscribe':
+      return validate(SubscribeIO, message)
+    case 'offer':
+      return validate(OfferIO, message)
+    case 'answer':
+      return validate(AnswerIO, message)
+    case 'iceCandidate':
+      return validate(IceCandidateIO, message)
+
+    default:
+      return err({ name: 'MissingMethodError', errorMessage: 'invalid method' })
+  }
+}
