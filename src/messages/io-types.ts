@@ -12,6 +12,7 @@ export const SubscribeIO = object({
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
   requestId: string(),
+  startAt: string().optional(),
 })
 
 export const AnswerIO = object({
@@ -20,6 +21,7 @@ export const AnswerIO = object({
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
   encryptedPayload: string(),
+  startAt: string().optional(),
 })
 
 export const OfferIO = object({
@@ -28,6 +30,7 @@ export const OfferIO = object({
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
   encryptedPayload: string(),
+  startAt: string().optional(),
 })
 
 export const IceCandidateIO = object({
@@ -36,6 +39,7 @@ export const IceCandidateIO = object({
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
   encryptedPayload: string(),
+  startAt: number().optional(),
 })
 
 export type Answer = z.infer<typeof AnswerIO>
