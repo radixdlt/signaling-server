@@ -35,7 +35,7 @@ const server = async () => {
   handleDataChannel(redis.data$).subscribe()
 
   wss.on('connection', (ws) => {
-    log.trace({ event: `ClientConnected`, clientConnected: wss.clients.size })
+    log.info({ event: `ClientConnected`, clientConnected: wss.clients.size })
     connectedClientsGauge.inc()
 
     ws.id = v4()

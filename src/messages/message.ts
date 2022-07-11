@@ -63,10 +63,7 @@ export const messageFns = (
     return bufferToString(buffer)
       .mapErr(handleMessageError({ name: 'MessageConversionError' }))
       .andThen(parseMessage)
-      .andThen((message) => {
-        log.info({ event: 'IncomingMessage', message })
-        return validateMessage(message)
-      })
+      .andThen(validateMessage)
       .map((message) => {
         if (message.connectionId) {
           ws.connectionId = message.connectionId
@@ -89,7 +86,7 @@ export const messageFns = (
           getWebsocketClients(message.data.connectionId).map((clients) => {
             for (const client of clients) {
               if (client.id !== message.clientId) {
-                log.info({ event: 'Send', message: message.data })
+                log.trace({ event: 'Send', message: message.data })
                 client.send(JSON.stringify(message.data))
                 outgoingMessageCounter.inc()
               }
