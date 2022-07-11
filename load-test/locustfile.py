@@ -4,10 +4,11 @@ import time
 import json
 import gevent
 from uuid import uuid4
+import os
 
 class UserBehavior(TaskSet):   
     def on_start(self):
-        self.ws = create_connection("ws://signaling-server:4000")
+        self.ws = create_connection(os.environ.get('SIGNALING_SERVER_URL'))
 
         def _receive():
             while True:

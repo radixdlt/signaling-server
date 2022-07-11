@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      SIGNALING_SERVER_URL: ws://signaling-server:4000
     ports:
       - '8089:8089'
     volumes:
@@ -15,6 +17,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      SIGNALING_SERVER_URL: ws://signaling-server:4000
     volumes:
       - ./:/mnt/locust
     command: -f /mnt/locust/locustfile.py --worker --master-host master
