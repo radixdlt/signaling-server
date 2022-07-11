@@ -1,0 +1,45 @@
+version: '3.7'
+
+services:
+  signaling-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/home/node/app/src
+      - ./nodemon.json:/home/node/app/nodemon.json
+    container_name: signaling-server
+    expose:
+      - '4000'
+      - '4001'
+    ports:
+      - '4000:4000'
+      - '4001:4001'
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+      WS_PORT: 4000
+      HTTP_PORT: 4001
+      LOG_LEVEL: trace
+      NODE_ENV: prod
+    command: npm start
+    depends_on:
+      - redis
+  redis:
+    image: redis:7.0-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes:
+      - redisData:/data
+    container_name: signaling-server-redis
+volumes:
+  redisData:
+    driver: local
+
+networks:
+  default:
+    external:
+      name: signaling-server
