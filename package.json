@@ -4,7 +4,7 @@
   "description": "WebRTC signaling server",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_PATH=./build node build/server.js",
+    "start": "NODE_PATH=./build node --max-old-space-size=8192 build/server.js",
     "build": "tsc -p .",
     "dev": "nodemon src/server.ts",
     "test": "mocha -r ts-node/register 'src/**/*.test.ts'",
