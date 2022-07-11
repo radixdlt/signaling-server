@@ -22,7 +22,7 @@ services:
       REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
       WS_PORT: 4000
       HTTP_PORT: 4001
-      LOG_LEVEL: trace
+      LOG_LEVEL: info
       NODE_ENV: dev
     command: npm run dev
     depends_on:
