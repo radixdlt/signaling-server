@@ -84,7 +84,7 @@ const getNextMessage = (
 describe('webRTC SDP exchange', () => {
   it('should simulate an exchange of SDP and ICE between two clients', (done) => {
     const client1 = createClient('ws://localhost:4000')
-    const client2 = createClient('ws://localhost:4001')
+    const client2 = createClient('ws://localhost:4100')
 
     const clients = { client1, client2 }
 
