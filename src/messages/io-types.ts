@@ -12,7 +12,7 @@ export const SubscribeIO = object({
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
   requestId: string(),
-  startAt: string().optional(),
+  startAt: number().optional(),
 })
 
 export const AnswerIO = object({
@@ -21,7 +21,7 @@ export const AnswerIO = object({
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
   encryptedPayload: string(),
-  startAt: string().optional(),
+  startAt: number().optional(),
 })
 
 export const OfferIO = object({
@@ -30,7 +30,7 @@ export const OfferIO = object({
   source: union([literal('android'), literal('extension'), literal('iOS')]),
   connectionId: string(),
   encryptedPayload: string(),
-  startAt: string().optional(),
+  startAt: number().optional(),
 })
 
 export const IceCandidateIO = object({
