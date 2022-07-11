@@ -21,3 +21,6 @@ down:
 
 down-test: 
 	docker-compose -f ./docker-compose.yml -f ./docker-compose.test.yml down
+
+loadtest:
+	docker-compose -f ./load-test/docker-compose.yml up --scale worker=4
