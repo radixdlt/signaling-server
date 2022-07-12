@@ -1,5 +1,5 @@
 server:
-  wsPort: 4000
+  port: 4000
   httpPort: 4001
   logLevel: trace
   nodeEnv: dev
@@ -90,3 +90,10 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+metrics:
+  enabled: true
+  port: 4001
+  serviceMonitor:
+    path: /metrics
+    interval: 15s

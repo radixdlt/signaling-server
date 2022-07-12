@@ -11,3 +11,8 @@ ingress:
     - secretName: self-signed-tls
       hosts:
         - signaling-server-dev.rdx-works-main.extratools.works
+
+metrics:
+  alert_labels:
+    env: dev
+    cluster: rdx-works-main-dev

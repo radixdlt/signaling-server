@@ -24,7 +24,7 @@ const handleClientHeartbeat = (wss: WebSocketServer) => () => {
 }
 
 export const websocketServer = () => {
-  const wss = new WebSocketServer({ port: config.wsPort })
+  const wss = new WebSocketServer({ port: config.port })
 
   // ping clients to check if connection is still active
   const heartbeatInterval = setInterval(
