@@ -40,7 +40,7 @@ spec:
               value: {{ .Values.server.logLevel | quote }}
             - name: NODE_ENV
               value: {{ .Values.server.nodeEnv | quote }}
-            - name: WS_PORT
+            - name: PORT
               value: {{ .Values.server.port | quote }}
             - name: HTTP_PORT
               value: {{ .Values.metrics.port | quote }}
