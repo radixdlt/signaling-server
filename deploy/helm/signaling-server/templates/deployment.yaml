@@ -40,10 +40,10 @@ spec:
               value: {{ .Values.server.logLevel | quote }}
             - name: NODE_ENV
               value: {{ .Values.server.nodeEnv | quote }}
-            - name: WS_PORT
-              value: {{ .Values.server.wsPort | quote }}
+            - name: PORT
+              value: {{ .Values.server.port | quote }}
             - name: HTTP_PORT
-              value: {{ .Values.server.httpPort | quote }}
+              value: {{ .Values.metrics.port | quote }}
             - name: REDIS_HOST
               value: {{ .Values.redis.host | quote }}
             - name: REDIS_PORT
@@ -52,8 +52,23 @@ spec:
               value: {{ .Values.redis.password | quote }}
           ports:
             - name: http
-              containerPort: {{ .Values.server.wsPort }}
+              containerPort: {{ .Values.server.port }}
               protocol: TCP
+            - name: metrics
+              containerPort: {{ .Values.metrics.port }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 5
+            httpGet:
+              path: /health
+              port: metrics
+          readinessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 10
+            httpGet:
+              path: /health
+              port: metrics
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

@@ -1,18 +1,28 @@
 import client from 'prom-client'
 
 export const connectedClientsGauge = new client.Gauge({
-  name: 'connected_clients',
-  help: 'the number of connected clients',
+  name: 'signaling_server_connected_clients',
+  help: 'The number of connected clients',
 })
 
 export const incomingMessageCounter = new client.Counter({
-  name: 'incoming_messages',
-  help: 'number of incoming messages',
+  name: 'signaling_server_incoming_messages',
+  help: 'Number of incoming messages',
 })
 
 export const outgoingMessageCounter = new client.Counter({
-  name: 'outgoing_messages',
-  help: 'number of outgoing messages',
+  name: 'signaling_server_outgoing_messages',
+  help: 'Number of outgoing messages',
+})
+
+export const publishMessageCounter = new client.Counter({
+  name: 'signaling_server_publish_messages',
+  help: 'Number of published messages',
+})
+
+export const subscribeMessageCounter = new client.Counter({
+  name: 'signaling_server_subscribe_messages',
+  help: 'Number of subscribed messages',
 })
 
 export const prometheusClient = client
