@@ -12,32 +12,10 @@ jobs:
       pull-requests: read
 
     runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.6.1
-        with:
-          role-to-assume: arn:aws:iam::308190735829:role/gh-signaling-server-pr-deployer
-          aws-region: eu-west-2
-
-      - name: Install kubectl
-        uses: yokawasa/action-setup-kube-tools@v0.8.0
-        with:
-          setup-tools: |
-            kubectl
-          kubectl: '1.18.20'
-
-      - name: Setup cluster authentication
-        run: |
-          aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER --alias $EKS_CLUSTER
-          kubectl config get-contexts
-        env:
-          AWS_REGION: eu-west-2
-          EKS_CLUSTER: "rdx-works-main-dev"
-
-      - name: Delete PR subnamespace
-        run: |
-          RESOURCE_NAMESPACE=signaling-server-pr-${{ github.event.pull_request.number }}
-
-          helm uninstall signaling-server -n $RESOURCE_NAMESPACE
-
-          kubectl delete subns $RESOURCE_NAMESPACE -n signaling-server-ci-pr
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/delete-pr-subns.yml@v0.2
+    with:
+      project_name: signaling-server
+      pull_request_number: ${{ github.event.pull_request.number }}
+      aws_region: eu-west-2
+      role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-pr-deployer
+      eks_cluster: rdx-works-main-dev
