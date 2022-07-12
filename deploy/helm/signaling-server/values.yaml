@@ -1,8 +1,8 @@
 server:
   port: 4000
   httpPort: 4001
-  logLevel: trace
-  nodeEnv: dev
+  logLevel: info
+  nodeEnv: production
 
 redis:
   host: redis-master
