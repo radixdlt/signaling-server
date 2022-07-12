@@ -5,13 +5,8 @@ on:
     types: [ closed ]
 
 jobs:
-  delete-pr-namespace:
-    permissions:
-      id-token: write
-      contents: read
-      pull-requests: read
+  delete-pr-subns:
 
-    runs-on: ubuntu-latest
     uses: radixdlt/iac-resuable-artifacts/.github/workflows/delete-pr-subns.yml@v0.2
     with:
       project_name: signaling-server
