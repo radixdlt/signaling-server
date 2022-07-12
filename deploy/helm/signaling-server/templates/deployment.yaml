@@ -52,7 +52,7 @@ spec:
               value: {{ .Values.redis.password | quote }}
           ports:
             - name: http
-              containerPort: {{ .Values.server.wsPort }}
+              containerPort: {{ .Values.server.port }}
               protocol: TCP
             - name: metrics
               containerPort: {{ .Values.metrics.port }}

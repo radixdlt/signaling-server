@@ -1,5 +1,5 @@
 server:
-  wsPort: 4000
+  port: 4000
   httpPort: 4001
   logLevel: trace
   nodeEnv: dev
