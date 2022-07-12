@@ -15,4 +15,14 @@ export const outgoingMessageCounter = new client.Counter({
   help: 'Number of outgoing messages',
 })
 
+export const publishMessageCounter = new client.Counter({
+  name: 'signaling_server_publish_messages',
+  help: 'Number of published messages',
+})
+
+export const subscribeMessageCounter = new client.Counter({
+  name: 'signaling_server_subscribe_messages',
+  help: 'Number of subscribed messages',
+})
+
 export const prometheusClient = client
