@@ -1,6 +1,5 @@
 server:
   port: 4000
-  httpPort: 4001
   logLevel: info
   nodeEnv: production
 
