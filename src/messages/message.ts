@@ -60,23 +60,25 @@ export const messageFns = (
       return ws.send(JSON.stringify(response))
     }
 
-    return bufferToString(buffer)
-      .mapErr(handleMessageError({ name: 'MessageConversionError' }))
-      .andThen(parseMessage)
-      .andThen(validateMessage)
-      .map((message) => {
-        if (message.connectionId) {
-          ws.connectionId = message.connectionId
-        }
-        return message
-      })
-      .asyncAndThen((message) => publishMessage(message, ws.id))
-      .map((message) => {
-        sendMessage({ valid: message })
-      })
-      .mapErr((error) => {
-        sendMessage(error)
-      })
+    return (
+      bufferToString(buffer)
+        .mapErr(handleMessageError({ name: 'MessageConversionError' }))
+        .andThen(parseMessage)
+        // .andThen(validateMessage)
+        .map((message) => {
+          if (message.connectionId) {
+            ws.connectionId = message.connectionId
+          }
+          return message
+        })
+        .asyncAndThen((message) => publishMessage(message, ws.id))
+        .map((message) => {
+          sendMessage({ valid: message })
+        })
+        .mapErr((error) => {
+          sendMessage(error)
+        })
+    )
   }
 
   const handleDataChannel = (message$: Observable<string>) =>
