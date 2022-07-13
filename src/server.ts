@@ -35,8 +35,8 @@ const server = async () => {
   handleDataChannel(redis.data$).subscribe()
 
   wss.on('connection', (ws) => {
-    log.info({ event: `ClientConnected`, clientConnected: wss.clients.size })
-    connectedClientsGauge.inc()
+    log.info({ event: `ClientConnected`, clients: wss.clients.size })
+    connectedClientsGauge.set(wss.clients.size)
 
     ws.id = v4()
     ws.isAlive = true
@@ -51,10 +51,10 @@ const server = async () => {
     })
 
     ws.onclose = () => {
-      connectedClientsGauge.dec()
-      log.trace({
+      connectedClientsGauge.set(wss.clients.size)
+      log.info({
         event: 'ClientDisconnected',
-        clientConnected: wss.clients.size,
+        clients: wss.clients.size,
       })
     }
   })
