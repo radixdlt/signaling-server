@@ -22,6 +22,7 @@ releases:
     values:
       - architecture: standalone
         commonConfiguration: |
+          loglevel verbose
           client-output-buffer-limit normal 0 0 0
           client-output-buffer-limit slave 256mb 64mb 60
           client-output-buffer-limit pubsub 256mb 64mb 60
