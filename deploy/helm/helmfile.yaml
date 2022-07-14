@@ -27,15 +27,15 @@ releases:
         master:
           resources:
             limits:
-              cpu: 500m
-              memory: 128Mi
+              cpu: 1000m
+              memory: 512Mi
             requests:
-              cpu: 500m
-              memory: 128Mi
+              cpu: 1000m
+              memory: 512Mi
           persistence:
             enabled: true
         replica:
-          replicaCount: 0
+          replicaCount: 4
         metrics:
           enabled: true
           serviceMonitor:
