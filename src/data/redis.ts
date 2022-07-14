@@ -5,17 +5,21 @@ import { Subject } from 'rxjs'
 import { combine, ResultAsync } from 'neverthrow'
 
 export const redisClient = () => {
-  const client = createClient({
+  const options = {
     url: `redis://${config.redis.host}:${config.redis.port}`,
     password: config.redis.password,
-  })
-  const subscriber = client.duplicate()
-  const publisher = client.duplicate()
+  }
+  const subscriber = createClient(options)
+  const publisher = createClient(options)
 
   const errorSubject = new Subject<any>()
   const dataSubject = new Subject<string>()
 
-  client.on('error', (err) => {
+  subscriber.on('error', (err) => {
+    errorSubject.next(err)
+  })
+
+  publisher.on('error', (err) => {
     errorSubject.next(err)
   })
 
@@ -40,7 +44,6 @@ export const redisClient = () => {
 
   const connect = () =>
     combine([
-      connectClient('client', client),
       connectClient('publisher', publisher),
       connectClient('subscriber', subscriber),
     ]).map(() => {

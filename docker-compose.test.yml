@@ -20,7 +20,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-      WS_PORT: 4100
+      PORT: 4100
       HTTP_PORT: 4101
       LOG_LEVEL: trace
       NODE_ENV: dev
