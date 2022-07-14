@@ -5,12 +5,14 @@ import { Subject } from 'rxjs'
 import { combine, ResultAsync } from 'neverthrow'
 
 export const redisClient = () => {
-  const options = {
-    url: `redis://${config.redis.host}:${config.redis.port}`,
+  const subscriber = createClient({
+    url: `redis://${config.redis.sub_host}:${config.redis.port}`,
     password: config.redis.password,
-  }
-  const subscriber = createClient(options)
-  const publisher = createClient(options)
+  })
+  const publisher = createClient({
+    url: `redis://${config.redis.pub_host}:${config.redis.port}`,
+    password: config.redis.password,
+  })
 
   const errorSubject = new Subject<any>()
   const dataSubject = new Subject<string>()
