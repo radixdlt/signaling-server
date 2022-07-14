@@ -44,8 +44,10 @@ spec:
               value: {{ .Values.server.port | quote }}
             - name: HTTP_PORT
               value: {{ .Values.metrics.port | quote }}
-            - name: REDIS_HOST
-              value: {{ .Values.redis.host | quote }}
+            - name: REDIS_HOST_PUB
+              value: {{ .Values.redis.pub.host | quote }}
+            - name: REDIS_HOST_SUB
+              value: {{ .Values.redis.sub.host | quote }}
             - name: REDIS_PORT
               value: {{ .Values.redis.port | quote }}
             - name: REDIS_PASSWORD

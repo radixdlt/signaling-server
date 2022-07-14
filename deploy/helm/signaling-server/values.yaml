@@ -4,7 +4,10 @@ server:
   nodeEnv: production
 
 redis:
-  host: redis-master
+  pub:
+    host: redis-master
+  sub:
+    host: redis-replicas
   port: 6379
   password: redis
 
