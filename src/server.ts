@@ -50,6 +50,10 @@ const server = async () => {
       await handleIncomingMessage(ws, messageBuffer)
     })
 
+    ws.onerror = (event) => {
+      log.error(event)
+    }
+
     ws.onclose = () => {
       connectedClientsGauge.set(wss.clients.size)
       log.info({
@@ -60,4 +64,9 @@ const server = async () => {
   })
 }
 
-server()
+try {
+  server()
+} catch (error) {
+  log.error(error)
+  throw error
+}
