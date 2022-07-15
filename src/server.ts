@@ -29,7 +29,7 @@ const server = async () => {
 
   // TODO: handle redis errors
   redis.error$.subscribe((error) => {
-    log.error({ errorName: 'RedisError', error })
+    log.error({ errorName: 'RedisError', error: JSON.stringify(error) })
   })
 
   handleDataChannel(redis.data$).subscribe()
