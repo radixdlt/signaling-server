@@ -5,9 +5,9 @@ server:
 
 redis:
   pub:
-    host: redis-master
+    host: signaling-server-redis-test-01.7ffct2.ng.0001.euw2.cache.amazonaws.com
   sub:
-    host: redis-replicas
+    host: signaling-server-redis-test-01-ro.7ffct2.ng.0001.euw2.cache.amazonaws.com
   port: 6379
   password: redis
 
