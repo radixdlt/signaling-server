@@ -25,7 +25,7 @@ releases:
           loglevel verbose
           client-output-buffer-limit normal 0 0 0
           client-output-buffer-limit slave 1024mb 128mb 60
-          client-output-buffer-limit pubsub 512mb 64mb 60
+          client-output-buffer-limit pubsub 1024mb 128mb 60
         auth:
           enabled: true
           password: redis
