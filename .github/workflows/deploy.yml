@@ -46,6 +46,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
         with:
