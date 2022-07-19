@@ -4,15 +4,23 @@ import { config } from '../config'
 import { Subject } from 'rxjs'
 import { combine, ResultAsync } from 'neverthrow'
 
+type RedisClientConfig = Parameters<typeof createClient>[0]
+
 export const redisClient = () => {
-  const subscriber = createClient({
+  const subscriberConfig: RedisClientConfig = {
     url: `redis://${config.redis.sub_host}:${config.redis.port}`,
-    password: config.redis.password,
-  })
-  const publisher = createClient({
+  }
+  const publisherConfig: RedisClientConfig = {
     url: `redis://${config.redis.pub_host}:${config.redis.port}`,
-    password: config.redis.password,
-  })
+  }
+
+  if (config.redis.password) {
+    subscriberConfig.password = config.redis.password
+    publisherConfig.password = config.redis.password
+  }
+
+  const subscriber = createClient(subscriberConfig)
+  const publisher = createClient(publisherConfig)
 
   const errorSubject = new Subject<any>()
   const dataSubject = new Subject<string>()
