@@ -89,7 +89,11 @@ autoscaling:
 
 nodeSelector: {}
 
-tolerations: []
+tolerations:
+- key: "signaling-server"
+  operator: "Equal"
+  value: "true"
+  effect: "NoSchedule"
 
 affinity: {}
 
