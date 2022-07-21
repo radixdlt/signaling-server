@@ -64,9 +64,7 @@ const server = async () => {
   })
 }
 
-try {
-  server()
-} catch (error) {
+server().catch((error) => {
   console.error(error)
   log.error(error)
-}
+})
