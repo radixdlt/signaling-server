@@ -59,18 +59,18 @@ spec:
             - name: metrics
               containerPort: {{ .Values.metrics.port }}
               protocol: TCP
-          livenessProbe:
-            failureThreshold: 5
-            initialDelaySeconds: 5
-            httpGet:
-              path: /health
-              port: metrics
-          readinessProbe:
-            failureThreshold: 5
-            initialDelaySeconds: 10
-            httpGet:
-              path: /health
-              port: metrics
+#          livenessProbe:
+#            failureThreshold: 5
+#            initialDelaySeconds: 5
+#            httpGet:
+#              path: /health
+#              port: metrics
+#          readinessProbe:
+#            failureThreshold: 5
+#            initialDelaySeconds: 10
+#            httpGet:
+#              path: /health
+#              port: metrics
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
