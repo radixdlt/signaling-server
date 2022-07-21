@@ -1,7 +1,7 @@
 server:
   port: 4000
   logLevel: info
-  nodeEnv: production
+  nodeEnv: dev
 
 redis:
   pub:
