@@ -26,10 +26,12 @@ export const redisClient = () => {
   const dataSubject = new Subject<string>()
 
   subscriber.on('error', (err) => {
+    console.error(err)
     errorSubject.next(err)
   })
 
   publisher.on('error', (err) => {
+    console.error(err)
     errorSubject.next(err)
   })
 
