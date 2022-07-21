@@ -14,6 +14,7 @@ export type ErrorName =
   | 'GetDataError'
   | 'PublishError'
   | 'MissingMethodError'
+  | 'InternalError'
 
 export type MessageError = { name: ErrorName; errorMessage?: string }
 

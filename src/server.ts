@@ -2,53 +2,48 @@ import { log } from './utils/log'
 import { messageFns } from './messages'
 import { websocketServer } from './websocket/websocket-server'
 import { v4 } from 'uuid'
-import { redisClient } from './data'
+import { redisClient, clientRepo } from './data'
 import {
   connectedClientsGauge,
   incomingMessageCounter,
   prometheusClient,
 } from './metrics/metrics'
 import './http/http-server'
+import {} from 'data/client-repo'
 
 const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
 collectDefaultMetrics()
 
 const server = async () => {
-  const redis = redisClient()
-  const connection = await redis.connect()
-  const { wss, getClientsByConnectionId } = websocketServer()
-  const { handleIncomingMessage, handleDataChannel } = messageFns(
-    redis.publish,
-    getClientsByConnectionId
+  const redis = await redisClient()
+  const { wss } = websocketServer()
+  const { handleIncomingMessage } = messageFns(
+    redis.createDataChannel,
+    redis.getClients,
+    redis.addClient,
+    redis.publish
   )
-
-  // A redis connection error at this point is most likely caused by a misconfiguration
-  if (connection.isErr()) {
-    throw connection.error
-  }
 
   // TODO: handle redis errors
   redis.error$.subscribe((error) => {
     log.error({ errorName: 'RedisError', error: JSON.stringify(error) })
   })
 
-  handleDataChannel(redis.data$).subscribe()
-
   wss.on('connection', (ws) => {
-    log.info({ event: `ClientConnected`, clients: wss.clients.size })
+    ws.id = v4()
+    log.info({ event: `ClientConnected`, clients: wss.clients.size, id: ws.id })
     connectedClientsGauge.set(wss.clients.size)
 
-    ws.id = v4()
     ws.isAlive = true
 
     ws.on('pong', () => {
       ws.isAlive = true
     })
 
-    ws.on('message', async (messageBuffer) => {
+    ws.onmessage = async (event) => {
       incomingMessageCounter.inc()
-      await handleIncomingMessage(ws, messageBuffer)
-    })
+      await handleIncomingMessage(ws, event.data.toString())
+    }
 
     ws.onerror = (event) => {
       log.error(event)
@@ -60,6 +55,10 @@ const server = async () => {
         event: 'ClientDisconnected',
         clients: wss.clients.size,
       })
+      if (ws.removeDataChanel) {
+        ws.removeDataChanel()
+      }
+      clientRepo.remove(ws.connectionId, ws.id)
     }
   })
 }

@@ -3,12 +3,17 @@ import { WebSocketServer, WebSocket } from 'ws'
 import { config } from '../config'
 import { setToArray } from '../utils/utils'
 import { log } from '../utils/log'
+import { clientRepo, CreateDataChannel } from '../data'
+import { Subscription } from 'rxjs'
 
 declare module 'ws' {
   interface WebSocket {
     isAlive: boolean
     connectionId: string
     id: string
+    dataChanel?: ReturnType<CreateDataChannel>
+    dataChanelSubscription?: Subscription
+    removeDataChanel?: () => void
   }
 }
 
@@ -20,6 +25,10 @@ const handleClientHeartbeat = (wss: WebSocketServer) => () => {
         clients: wss.clients.size,
       })
       connectedClientsGauge.set(wss.clients.size)
+      if (ws.removeDataChanel) {
+        ws.removeDataChanel()
+      }
+      clientRepo.remove(ws.connectionId, ws.id)
       return ws.terminate()
     }
 

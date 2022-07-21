@@ -1,8 +1,17 @@
 import { Response } from '../messages/message'
 import { WebSocket } from 'ws'
-import { combineLatest, merge, ReplaySubject, Subject, tap } from 'rxjs'
+import {
+  combineLatest,
+  delay,
+  merge,
+  ReplaySubject,
+  skip,
+  Subject,
+  tap,
+} from 'rxjs'
 import { MessageTypesObjects } from '../messages/_types'
 import { expect } from 'chai'
+import { randomUUID } from 'node:crypto'
 
 /**
  * ==============================
@@ -20,7 +29,7 @@ const SUBSCRIBE: MessageTypesObjects = {
   method: 'subscribe',
   source: 'extension',
   connectionId,
-  requestId: '8927B485-B3C8-4EAA-BF19-54DCB65759D1',
+  requestId: randomUUID(),
 }
 
 const OFFER: MessageTypesObjects = {
@@ -29,7 +38,7 @@ const OFFER: MessageTypesObjects = {
   connectionId,
   method: 'offer',
   source: 'iOS',
-  requestId: '8927B485-B3C8-4EAA-BF19-54DCB65759D1',
+  requestId: randomUUID(),
 }
 
 const ICE_CANDIDATE: MessageTypesObjects = {
@@ -38,16 +47,62 @@ const ICE_CANDIDATE: MessageTypesObjects = {
   connectionId,
   method: 'iceCandidate',
   source: 'iOS',
-  requestId: 'AD10B2D9-7EFD-4096-A931-455A416D87B9',
+  requestId: randomUUID(),
 }
 
 const ANSWER: MessageTypesObjects = {
-  requestId: '8081ce1e-c83c-4108-9107-31f876a8d5fa',
+  requestId: randomUUID(),
   method: 'answer',
   source: 'extension',
   connectionId,
   encryptedPayload:
     '040c05cab39f2dacc07c26925669fc3b8008e35fd684a7514e2469a54655e0e27516da5f32da07499405c5ab12ba6326b9476c81f351b53cdb42508482ce47fbd163ce8340ba5d1366f9aa43ae7eae08366e40cd27129ea79ecafa8f5470789aa14504c8405bae8fe1898d38e518b1cfa972b94fc8465a38e19ab02aef68d2f645557a6c3c135cee86afb46dde39cc0047c68849a0986d7c12dac9501b3ff7c00f98e750a8deb4d1fca31afb952d1e7be6e56031e68d5b522492e1032330402a6606338992fbbbf54b921fbd191027cf50fc02fd5e672a5fd5209dc9ddb1db6b182152e1d9c555cf3ae2bd70b5208582157f091a6de722721f739f02393cc22f23372ef42d28416bcfd45f25bc5c9e9fad47da6c3d2e985ed8dcb5069b7541a7f51d0eb2a5400e3039f66e5e1f7b1e5e7d71a3feb9955d46dd62133d6c589793c9ee5968e92ab203f982e309df8a4dfd9ae39018958616c4fda54be76927c7868c49365ce33a542f153baca47ac95f3deac6da0ba43afb8f0b81635db499701ae7c0d73d7ca99db14f9963e23995d994d34eb22b4ead5f1c56f949ec440638ce4bb47e751ca575d835b42d33759cf3e66800bfc7a9bdea1a3f89a0ed372102e36a9824113c07a631e6ce618c23581ec263a7c070caaddca2b6b9cd087dab214de2652f45edd495c432caa55e16fb33e2e29bf77f6b88de5e89495e56e6577087a76d5029f84e920a2329e1bf32810cf5b5',
+}
+
+const createMessage = (
+  method: MessageTypesObjects['method'],
+  source: MessageTypesObjects['source']
+) => {
+  switch (method) {
+    case 'answer':
+      return {
+        ...ANSWER,
+        source,
+        requestId: randomUUID(),
+        connectionId: '111',
+        encryptedPayload: 'abc',
+      }
+
+    case 'offer':
+      return {
+        ...OFFER,
+        source,
+        requestId: randomUUID(),
+        connectionId: '111',
+        encryptedPayload: 'abc',
+      }
+
+    case 'iceCandidate':
+      return {
+        ...ICE_CANDIDATE,
+        source,
+        requestId: randomUUID(),
+        connectionId: '111',
+        encryptedPayload: 'abc',
+      }
+
+    case 'subscribe':
+      return {
+        ...SUBSCRIBE,
+        source,
+        requestId: randomUUID(),
+        connectionId: '111',
+        encryptedPayload: 'abc',
+      }
+
+    default:
+      throw new Error('invalid method')
+  }
 }
 
 const createClient = (url: string) => {
@@ -94,39 +149,39 @@ describe('webRTC SDP exchange', () => {
     }[] = [
       {
         client: 'client1',
-        message: SUBSCRIBE,
+        message: createMessage('subscribe', 'extension'),
       },
       {
         client: 'client2',
-        message: OFFER,
+        message: createMessage('offer', 'iOS'),
       },
       {
         client: 'client2',
-        message: ICE_CANDIDATE,
+        message: createMessage('iceCandidate', 'iOS'),
       },
       {
         client: 'client2',
-        message: ICE_CANDIDATE,
+        message: createMessage('iceCandidate', 'iOS'),
       },
       {
         client: 'client2',
-        message: ICE_CANDIDATE,
+        message: createMessage('iceCandidate', 'iOS'),
       },
       {
         client: 'client1',
-        message: ANSWER,
+        message: createMessage('answer', 'extension'),
       },
       {
         client: 'client1',
-        message: ICE_CANDIDATE,
+        message: createMessage('iceCandidate', 'extension'),
       },
       {
         client: 'client1',
-        message: ICE_CANDIDATE,
+        message: createMessage('iceCandidate', 'extension'),
       },
       {
         client: 'client1',
-        message: ICE_CANDIDATE,
+        message: createMessage('iceCandidate', 'extension'),
       },
     ]
 
@@ -139,45 +194,52 @@ describe('webRTC SDP exchange', () => {
       }
     }
 
+    const client1Messages = messagesToSend.filter(
+      (item) => item.client === 'client1'
+    )
+    const client2Messages = messagesToSend.filter(
+      (item) => item.client === 'client2'
+    )
+
     const expectedClient1Messages = [
       {
-        valid: SUBSCRIBE,
+        valid: client1Messages[0].message,
       },
-      OFFER,
-      ICE_CANDIDATE,
-      ICE_CANDIDATE,
-      ICE_CANDIDATE,
+      client2Messages[0].message,
+      client2Messages[1].message,
+      client2Messages[2].message,
+      client2Messages[3].message,
       {
-        valid: ANSWER,
-      },
-      {
-        valid: ICE_CANDIDATE,
+        valid: client1Messages[1].message,
       },
       {
-        valid: ICE_CANDIDATE,
+        valid: client1Messages[2].message,
       },
       {
-        valid: ICE_CANDIDATE,
+        valid: client1Messages[3].message,
+      },
+      {
+        valid: client1Messages[4].message,
       },
     ]
 
     const expectedClient2Messages = [
       {
-        valid: OFFER,
+        valid: client2Messages[0].message,
       },
       {
-        valid: ICE_CANDIDATE,
+        valid: client2Messages[1].message,
       },
       {
-        valid: ICE_CANDIDATE,
+        valid: client2Messages[2].message,
       },
       {
-        valid: ICE_CANDIDATE,
+        valid: client2Messages[3].message,
       },
-      ANSWER,
-      ICE_CANDIDATE,
-      ICE_CANDIDATE,
-      ICE_CANDIDATE,
+      client1Messages[1].message,
+      client1Messages[2].message,
+      client1Messages[3].message,
+      client1Messages[4].message,
     ]
 
     const actualClient1Messages: Response[] = []
@@ -192,6 +254,11 @@ describe('webRTC SDP exchange', () => {
           console.log('⬇️ client1 got message')
           console.log(message)
           actualClient1Messages.push(message)
+          console.log('⬇️ client1 expected message')
+          console.log(expectedClient1Messages[actualClient1Messages.length - 1])
+          expect(message).to.deep.equal(
+            expectedClient1Messages[actualClient1Messages.length - 1]
+          )
         })
       ),
       client2.message$.pipe(
@@ -199,6 +266,14 @@ describe('webRTC SDP exchange', () => {
           console.log('⬇️ client2 got message')
           console.log(message)
           actualClient2Messages.push(message)
+          console.log(
+            `⬇️ client2 expected message: ${actualClient2Messages.length - 1}`
+          )
+          console.log(expectedClient2Messages[actualClient2Messages.length - 1])
+
+          expect(message).to.deep.equal(
+            expectedClient2Messages[actualClient2Messages.length - 1]
+          )
         })
       )
     )
@@ -212,6 +287,7 @@ describe('webRTC SDP exchange', () => {
           } else if (expectedMessages === actualMessages) {
             expect(actualClient1Messages).to.deep.eq(expectedClient1Messages)
             expect(actualClient2Messages).to.deep.eq(expectedClient2Messages)
+
             done()
           }
         })
@@ -221,6 +297,7 @@ describe('webRTC SDP exchange', () => {
     // Start the flow when both clients are connected
     combineLatest([client1.connected$, client2.connected$])
       .pipe(
+        delay(1000),
         tap(() => {
           sendNextMessage()
         })

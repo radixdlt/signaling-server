@@ -37,6 +37,17 @@ services:
     volumes:
       - redisData:/data
     container_name: signaling-server-redis
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    ports:
+      - '8081:8081'
 volumes:
   redisData:
     driver: local
