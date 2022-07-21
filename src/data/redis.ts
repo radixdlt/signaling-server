@@ -54,7 +54,7 @@ export const redisClient = async () => {
   ) =>
     ResultAsync.fromPromise(redisClient.connect(), (e) => e as Error).map(
       () => {
-        log.trace({ event: 'OpenRedisConnection', clientName: name })
+        log.info({ event: 'OpenRedisConnection', clientName: name })
       }
     )
 
@@ -87,6 +87,7 @@ export const redisClient = async () => {
 
   // A redis connection error at this point is most likely caused by a misconfiguration
   if (connection.isErr()) {
+    console.error(connection.error)
     log.error(connection.error)
     throw connection.error
   }
