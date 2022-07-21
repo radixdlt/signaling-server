@@ -48,7 +48,7 @@ export const redisClient = () => {
   ) =>
     ResultAsync.fromPromise(redisClient.connect(), (e) => e as Error).map(
       () => {
-        log.trace({ event: 'OpenRedisConnection', clientName: name })
+        log.info({ event: 'OpenRedisConnection', clientName: name })
       }
     )
 
