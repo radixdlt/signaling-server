@@ -16,6 +16,7 @@
   "devDependencies": {
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
+    "@types/prometheus-gc-stats": "^0.6.2",
     "@types/sinon": "^10.0.12",
     "chai": "^4.3.6",
     "mocha": "^10.0.0",
@@ -34,6 +35,7 @@
     "pino": "^8.1.0",
     "pino-pretty": "^8.1.0",
     "prom-client": "^14.0.1",
+    "prometheus-gc-stats": "^0.6.3",
     "rxjs": "^7.5.5",
     "uuid": "^8.3.2",
     "ws": "^8.8.0",
