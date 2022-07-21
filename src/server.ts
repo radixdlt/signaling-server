@@ -64,6 +64,6 @@ const server = async () => {
 try {
   server()
 } catch (error) {
+  console.error(error)
   log.error(error)
-  throw error
 }
