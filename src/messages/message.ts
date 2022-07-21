@@ -1,23 +1,12 @@
-import {
-  combine,
-  combineWithAllErrors,
-  errAsync,
-  okAsync,
-  ResultAsync,
-} from 'neverthrow'
+import { combineWithAllErrors, ResultAsync } from 'neverthrow'
 import { parseJSON } from '../utils/utils'
 import { handleMessageError, MessageError } from '../utils/error'
 import { validateMessage } from './validate'
 import { DataChannelMessage, MessageTypesObjects } from './_types'
 import { log } from '../utils/log'
-import { tap } from 'rxjs'
 import { WebSocket } from 'ws'
-import {
-  outgoingMessageCounter,
-  publishMessageCounter,
-} from '../metrics/metrics'
+import { outgoingMessageCounter } from '../metrics/metrics'
 import { CreateDataChannel } from '../data/redis'
-import { clientRepo } from '../data'
 import { config } from '../config'
 
 type ValidResponse = { valid: MessageTypesObjects }
@@ -122,37 +111,6 @@ export const messageFns = (
             sendMessage({ valid: message })
           })
           .mapErr(handlePublishError(message))
-
-        // if (ws.dataChanel) {
-        //   const outgoingMessage: DataChannelMessage = {
-        //     instanceId: config.instanceId,
-        //     clientId: ws.id,
-        //     data: message,
-        //   }
-        // const localClients = clientRepo.get(ws.connectionId, ws.id)
-
-        // if (localClients && localClients.length) {
-        //   localClients.forEach((client) => {
-        //     client.send(JSON.stringify(message), (error) => {
-        //       if (error) log.error(error)
-        //     })
-        //   })
-        //   return okAsync(message)
-        // } else {
-        //   return getClients(ws.connectionId).andThen((clients) => {
-        //     return ws.dataChanel
-        //       .publish(JSON.stringify(outgoingMessage))
-        //       .map(() => message)
-        //       .mapErr(handlePublishError(message))
-        //   })
-        // }
-        // } else {
-        //   return errAsync(
-        //     handleMessageError({ message, name: 'InternalError' })(
-        //       new Error('ws.dataChanel missing')
-        //     )
-        //   )
-        // }
       })
       .mapErr((error) => {
         sendMessage(error)
