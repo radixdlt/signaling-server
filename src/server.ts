@@ -2,14 +2,13 @@ import { log } from './utils/log'
 import { messageFns } from './messages'
 import { websocketServer } from './websocket/websocket-server'
 import { v4 } from 'uuid'
-import { redisClient, clientRepo } from './data'
+import { redisClient } from './data'
 import {
   connectedClientsGauge,
   incomingMessageCounter,
   prometheusClient,
 } from './metrics/metrics'
 import './http/http-server'
-import {} from 'data/client-repo'
 
 const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
 collectDefaultMetrics()
@@ -58,7 +57,6 @@ const server = async () => {
       if (ws.removeDataChanel) {
         ws.removeDataChanel()
       }
-      clientRepo.remove(ws.connectionId, ws.id)
     }
   })
 }

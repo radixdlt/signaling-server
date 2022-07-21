@@ -3,7 +3,7 @@ import { WebSocketServer, WebSocket } from 'ws'
 import { config } from '../config'
 import { setToArray } from '../utils/utils'
 import { log } from '../utils/log'
-import { clientRepo, CreateDataChannel } from '../data'
+import { CreateDataChannel } from '../data'
 import { Subscription } from 'rxjs'
 
 declare module 'ws' {
@@ -28,7 +28,6 @@ const handleClientHeartbeat = (wss: WebSocketServer) => () => {
       if (ws.removeDataChanel) {
         ws.removeDataChanel()
       }
-      clientRepo.remove(ws.connectionId, ws.id)
       return ws.terminate()
     }
 

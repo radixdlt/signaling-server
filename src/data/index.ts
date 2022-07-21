@@ -1,2 +1,1 @@
-export * from './client-repo';
-export * from './redis';
+export * from './redis'
