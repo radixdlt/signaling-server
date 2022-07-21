@@ -1,7 +1,7 @@
 server:
   port: 4000
   logLevel: info
-  nodeEnv: dev
+  nodeEnv: production
 
 redis:
   pub:
@@ -90,10 +90,10 @@ autoscaling:
 nodeSelector: {}
 
 tolerations:
-- key: "signaling-server"
-  operator: "Equal"
-  value: "true"
-  effect: "NoSchedule"
+  - key: 'signaling-server'
+    operator: 'Equal'
+    value: 'true'
+    effect: 'NoSchedule'
 
 affinity: {}
 

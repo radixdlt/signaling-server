@@ -15,7 +15,7 @@ declare module 'ws' {
 const handleClientHeartbeat = (wss: WebSocketServer) => () => {
   wss.clients.forEach((ws) => {
     if (ws.isAlive === false) {
-      log.info({
+      log.trace({
         event: 'ClientDisconnected',
         clients: wss.clients.size,
       })
