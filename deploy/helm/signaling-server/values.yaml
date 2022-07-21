@@ -1,6 +1,6 @@
 server:
   port: 4000
-  logLevel: trace
+  logLevel: info
   nodeEnv: production
 
 redis:
