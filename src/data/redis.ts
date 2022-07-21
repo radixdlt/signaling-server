@@ -113,6 +113,7 @@ export const redisClient = async () => {
 
   // A redis connection error at this point is most likely caused by a misconfiguration
   if (connection.isErr()) {
+    console.error(connection.error)
     log.error(connection.error)
     throw connection.error
   }
