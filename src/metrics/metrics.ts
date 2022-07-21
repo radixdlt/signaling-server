@@ -27,7 +27,7 @@ export const subscribeMessageCounter = new client.Counter({
 })
 
 gcStats(client.register, {
-  prefix: 'signaling_server',
+  prefix: 'signaling_server_',
 })()
 
 export const prometheusClient = client
