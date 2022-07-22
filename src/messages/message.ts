@@ -70,6 +70,8 @@ export const messageFns = (
           })
         )
         .mapErr((err) => {
+          if (err.message === 'WebSocket is not open: readyState 3 (CLOSED)')
+            return
           log.error(err)
         })
     }
