@@ -39,6 +39,32 @@ export const redisClient = async () => {
     errorSubject.next(err)
   })
 
+  subscriber.on('connect', () => {
+    log.info('RedisSubClient connect')
+  })
+  subscriber.on('ready', () => {
+    log.info('RedisSubClient ready')
+  })
+  subscriber.on('end', () => {
+    log.info('RedisSubClient end')
+  })
+  subscriber.on('reconnecting', () => {
+    log.info('RedisSubClient reconnecting')
+  })
+
+  publisher.on('connect', () => {
+    log.info('RedisPubClient connect')
+  })
+  publisher.on('ready', () => {
+    log.info('RedisPubClient ready')
+  })
+  publisher.on('end', () => {
+    log.info('RedisPubClient end')
+  })
+  publisher.on('reconnecting', () => {
+    log.info('RedisPubClient reconnecting')
+  })
+
   const publish = (
     channel: string,
     message: string
