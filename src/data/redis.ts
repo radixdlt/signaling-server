@@ -1,7 +1,6 @@
 import { log } from '../utils/log'
 import { createClient } from '@redis/client'
 import { config } from '../config'
-import { Subject } from 'rxjs'
 import { combine, ResultAsync } from 'neverthrow'
 import { publishMessageCounter } from '../metrics/metrics'
 
@@ -27,16 +26,12 @@ export const redisClient = async () => {
   const subscriber = createClient(subscriberConfig)
   const publisher = createClient(publisherConfig)
 
-  const errorSubject = new Subject<any>()
-
   subscriber.on('error', (err) => {
     log.error(err)
-    errorSubject.next(err)
   })
 
   publisher.on('error', (err) => {
     log.error(err)
-    errorSubject.next(err)
   })
 
   subscriber.on('connect', () => {
@@ -152,6 +147,5 @@ export const redisClient = async () => {
       ),
     createDataChannel,
     publish,
-    error$: errorSubject.asObservable(),
   }
 }
