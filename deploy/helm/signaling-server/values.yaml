@@ -73,14 +73,14 @@ ingress:
       hosts:
         - signaling-server-dev.extratools.works
 
-javascriptHeap: 4096
+javascriptHeap: 5096
 resources:
   limits:
     cpu: 2000m
-    memory: 4Gi
+    memory: 6Gi
   requests:
     cpu: 2000m
-    memory: 4Gi
+    memory: 6Gi
 
 autoscaling:
   enabled: true
