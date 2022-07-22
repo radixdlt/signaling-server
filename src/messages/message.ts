@@ -77,7 +77,7 @@ export const messageFns = (
     return parseMessage(rawMessage)
       .andThen(validateMessage)
       .asyncAndThen((message) => {
-        log.trace({ event: 'IncomingMessage', message, clientId: ws.id })
+        log.trace({ event: 'IncomingMessage', message })
         const dataChannelId = dataChannelRepo.getId(ws)
 
         if (dataChannelId) return okAsync({ message, dataChannelId })
