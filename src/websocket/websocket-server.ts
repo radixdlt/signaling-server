@@ -3,17 +3,11 @@ import { WebSocketServer, WebSocket } from 'ws'
 import { config } from '../config'
 import { setToArray } from '../utils/utils'
 import { log } from '../utils/log'
-import { CreateDataChannel } from '../data'
-import { Subscription } from 'rxjs'
-import { TypeOf } from 'zod'
-import { sendAsync } from './send-async'
 import { DataChannelRepoType } from 'data/data-channel-repo'
 
 declare module 'ws' {
   interface WebSocket {
     isAlive: boolean
-    connectionId: string
-    id: string
   }
 }
 
@@ -47,10 +41,5 @@ export const websocketServer = (dataChannelRepo: DataChannelRepoType) => {
     clearInterval(heartbeatInterval)
   })
 
-  const getClientsByConnectionId = (connectionId: string) =>
-    setToArray<WebSocket>(wss.clients).map((clients) =>
-      clients.filter((client) => client.connectionId === connectionId)
-    )
-
-  return { wss, getClientsByConnectionId }
+  return { wss }
 }
