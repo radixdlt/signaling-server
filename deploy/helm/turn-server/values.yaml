@@ -45,3 +45,8 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+redis:
+  host: redis-master
+  port: 6379
+  password: redis

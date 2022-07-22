@@ -13,41 +13,44 @@ environments:
   dev: {}
   pr: {}
 releases:
-
 {{ $SIG_SRV_NS := .Namespace }}
 {{ $SIG_SRV_IMAGE_TAG := .StateValues.ci.tag }}
-  # - name: redis
-  #   namespace: {{ $SIG_SRV_NS }}
-  #   chart: bitnami/redis
-  #   version: 16.10.1
-  #   values:
-  #     - architecture: replication
-  #       commonConfiguration: |
-  #         loglevel verbose
-  #         client-output-buffer-limit normal 0 0 0
-  #         client-output-buffer-limit slave 1024mb 128mb 60
-  #         client-output-buffer-limit pubsub 1024mb 128mb 60
-  #       auth:
-  #         enabled: true
-  #         password: redis
-  #       master:
-  #         resources:
-  #           limits:
-  #             cpu: 1000m
-  #             memory: 512Mi
-  #           requests:
-  #             cpu: 1000m
-  #             memory: 512Mi
-  #         persistence:
-  #           enabled: true
-  #       replica:
-  #         replicaCount: 4
-  #       metrics:
-  #         enabled: true
-  #         serviceMonitor:
-  #           enabled: true
-  #           additionalLabels:
-  #             release: prometheus-operator
+{{ $ENVIRONMENT_NAME := .Environment.Name }}
+{{ $INSTALL_LOCAL_REDIS := ternary (eq $ENVIRONMENT_NAME "pr") false true }}
+
+  - name: redis
+    namespace: {{ $SIG_SRV_NS }}
+    chart: bitnami/redis
+    version: 16.10.1
+    installed: {{ $INSTALL_LOCAL_REDIS }}
+    values:
+     - architecture: standalone
+       commonConfiguration: |
+         loglevel verbose
+         client-output-buffer-limit normal 0 0 0
+         client-output-buffer-limit slave 1024mb 128mb 60
+         client-output-buffer-limit pubsub 1024mb 128mb 60
+       auth:
+         enabled: true
+         password: redis
+       master:
+         resources:
+           limits:
+             cpu: 1000m
+             memory: 512Mi
+           requests:
+             cpu: 1000m
+             memory: 512Mi
+         persistence:
+           enabled: true
+       replica:
+         replicaCount: 4
+       metrics:
+         enabled: true
+         serviceMonitor:
+           enabled: true
+           additionalLabels:
+             release: prometheus-operator
   - name: turn-server
     namespace: {{ $SIG_SRV_NS }}
     chart: ./turn-server
