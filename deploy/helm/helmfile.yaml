@@ -16,7 +16,7 @@ releases:
 {{ $SIG_SRV_NS := .Namespace }}
 {{ $SIG_SRV_IMAGE_TAG := .StateValues.ci.tag }}
 {{ $ENVIRONMENT_NAME := .Environment.Name }}
-{{ $INSTALL_LOCAL_REDIS := ternary (eq $ENVIRONMENT_NAME "pr") false true }}
+{{ $INSTALL_LOCAL_REDIS := ternary (eq $ENVIRONMENT_NAME "pr") true false }}
 
   - name: redis
     namespace: {{ $SIG_SRV_NS }}
