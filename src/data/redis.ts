@@ -46,7 +46,10 @@ export const redisClient = async () => {
     ResultAsync.fromPromise(
       publisher.publish(channel, message),
       (e) => e as Error
-    ).map(() => {})
+    ).map(() => {
+      log.trace({ event: 'PublishMessage', message, channel })
+      publishMessageCounter.inc()
+    })
 
   const connectClient = (
     name: string,
@@ -58,23 +61,29 @@ export const redisClient = async () => {
       }
     )
 
+  const subscribeToDataChannel = (
+    dataChannel: string,
+    onMessage: (message: string) => void
+  ) =>
+    ResultAsync.fromPromise(
+      subscriber.subscribe(dataChannel, onMessage),
+      (error) => error as Error
+    )
+
   const createDataChannel = (
     dataChannel: string,
     onMessage: (message: string) => void
   ) => {
     log.trace({ event: 'DataChanelSubscribe', dataChannel })
-    subscriber.subscribe(dataChannel, onMessage)
-    return {
-      publish: (message: string) => {
-        log.trace({ event: 'DataChannelPublish', dataChannel, message })
-        publishMessageCounter.inc()
-        return publish(dataChannel, message)
-      },
+    return subscribeToDataChannel(dataChannel, onMessage).map(() => ({
       unsubscribe: () => {
         log.trace({ event: 'DataChanelUnsubscribe', dataChannel })
-        return subscriber.unsubscribe(dataChannel)
+        return ResultAsync.fromPromise(
+          subscriber.unsubscribe(dataChannel),
+          (error) => error as Error
+        )
       },
-    }
+    }))
   }
 
   const connect = async () =>
