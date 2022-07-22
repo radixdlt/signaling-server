@@ -28,11 +28,12 @@ const server = async () => {
 
   // TODO: handle redis errors
   redis.error$.subscribe((error) => {
+    console.error(error)
     log.error({ errorName: 'RedisError', error: JSON.stringify(error) })
   })
 
   wss.on('connection', (ws) => {
-    log.info({ event: `ClientConnected`, clients: wss.clients.size, id: ws.id })
+    log.info({ event: `ClientConnected`, clients: wss.clients.size })
     connectedClientsGauge.set(wss.clients.size)
 
     ws.isAlive = true
@@ -42,12 +43,16 @@ const server = async () => {
     })
 
     ws.onmessage = async (event) => {
-      incomingMessageCounter.inc()
-      await handleIncomingMessage(ws, event.data.toString())
+      try {
+        incomingMessageCounter.inc()
+        await handleIncomingMessage(ws, event.data.toString())
+      } catch (error) {
+        console.error(error)
+      }
     }
 
     ws.onerror = (event) => {
-      log.error(event)
+      log.error(event.error)
     }
 
     ws.onclose = () => {
@@ -61,7 +66,13 @@ const server = async () => {
   })
 }
 
-server().catch((error) => {
-  console.error(error)
-  log.error(error)
-})
+const runServer = async () => {
+  try {
+    await server()
+  } catch (error) {
+    console.error(error)
+    await runServer()
+  }
+}
+
+runServer()
