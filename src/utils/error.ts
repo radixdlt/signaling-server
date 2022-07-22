@@ -15,6 +15,7 @@ export type ErrorName =
   | 'PublishError'
   | 'MissingMethodError'
   | 'InternalError'
+  | 'DataChannelError'
 
 export type MessageError = { name: ErrorName; errorMessage?: string }
 

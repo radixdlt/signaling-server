@@ -9,15 +9,18 @@ import {
   prometheusClient,
 } from './metrics/metrics'
 import './http/http-server'
+import { DataChannelRepo } from './data/data-channel-repo'
 
 const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
 collectDefaultMetrics()
 
 const server = async () => {
   const redis = await redisClient()
-  const { wss } = websocketServer()
+  const dataChannelRepo = DataChannelRepo(redis.createDataChannel)
+  const { wss } = websocketServer(dataChannelRepo)
+
   const { handleIncomingMessage } = messageFns(
-    redis.createDataChannel,
+    dataChannelRepo,
     redis.getClients,
     redis.addClient,
     redis.publish
@@ -29,7 +32,6 @@ const server = async () => {
   })
 
   wss.on('connection', (ws) => {
-    ws.id = v4()
     log.info({ event: `ClientConnected`, clients: wss.clients.size, id: ws.id })
     connectedClientsGauge.set(wss.clients.size)
 
@@ -54,9 +56,7 @@ const server = async () => {
         event: 'ClientDisconnected',
         clients: wss.clients.size,
       })
-      if (ws.removeDataChanel) {
-        ws.removeDataChanel()
-      }
+      dataChannelRepo.remove(ws)
     }
   })
 }

@@ -254,8 +254,16 @@ describe('webRTC SDP exchange', () => {
           console.log('⬇️ client1 got message')
           console.log(message)
           actualClient1Messages.push(message)
-          console.log('⬇️ client1 expected message')
-          console.log(expectedClient1Messages[actualClient1Messages.length - 1])
+          const expected =
+            expectedClient1Messages[actualClient1Messages.length - 1]
+
+          if ((message as any).requestId !== (expected as any).requestId) {
+            console.log('⬇️ client1 expected message')
+            console.log(
+              expectedClient1Messages[actualClient1Messages.length - 1]
+            )
+          }
+
           expect(message).to.deep.equal(
             expectedClient1Messages[actualClient1Messages.length - 1]
           )
@@ -266,10 +274,17 @@ describe('webRTC SDP exchange', () => {
           console.log('⬇️ client2 got message')
           console.log(message)
           actualClient2Messages.push(message)
-          console.log(
-            `⬇️ client2 expected message: ${actualClient2Messages.length - 1}`
-          )
-          console.log(expectedClient2Messages[actualClient2Messages.length - 1])
+          const expected =
+            expectedClient2Messages[actualClient2Messages.length - 1]
+
+          if ((message as any).requestId !== (expected as any).requestId) {
+            console.log(
+              `⬇️ client2 expected message: ${actualClient2Messages.length - 1}`
+            )
+            console.log(
+              expectedClient2Messages[actualClient2Messages.length - 1]
+            )
+          }
 
           expect(message).to.deep.equal(
             expectedClient2Messages[actualClient2Messages.length - 1]

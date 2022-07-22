@@ -1,4 +1,4 @@
-import { combineWithAllErrors, ResultAsync } from 'neverthrow'
+import { combineWithAllErrors, okAsync, ResultAsync } from 'neverthrow'
 import { parseJSON } from '../utils/utils'
 import { handleMessageError, MessageError } from '../utils/error'
 import { validateMessage } from './validate'
@@ -6,15 +6,15 @@ import { DataChannelMessage, MessageTypesObjects } from './_types'
 import { log } from '../utils/log'
 import { WebSocket } from 'ws'
 import { outgoingMessageCounter } from '../metrics/metrics'
-import { CreateDataChannel } from '../data/redis'
-import { config } from '../config'
+import { DataChannelRepoType } from '../data/data-channel-repo'
+import { sendAsync } from '../websocket/send-async'
 
 type ValidResponse = { valid: MessageTypesObjects }
 type ErrorResponse = { ok: false; error: MessageError }
 export type Response = ValidResponse | MessageTypesObjects | ErrorResponse
 
 export const messageFns = (
-  createDataChannel: CreateDataChannel,
+  dataChannelRepo: DataChannelRepoType,
   getClients: (connectionId: string) => ResultAsync<string[], Error>,
   addClient: (
     connectionId: string,
@@ -30,6 +30,20 @@ export const messageFns = (
       errorMessage: `could not publish for connectionId: ${message.connectionId}`,
     })
 
+  const handleDataChannelError = (message: MessageTypesObjects) =>
+    handleMessageError({
+      message,
+      name: 'DataChannelError',
+      handler: message.method,
+      errorMessage: `could not open data chanel`,
+    })
+
+  const handleAddClientError = (message: MessageTypesObjects) =>
+    handleMessageError({
+      name: 'InternalError',
+      message,
+    })
+
   const parseMessage = (text: string) =>
     parseJSON<MessageTypesObjects>(text).mapErr(
       handleMessageError({
@@ -39,26 +53,22 @@ export const messageFns = (
     )
 
   const handleIncomingMessage = (ws: WebSocket, rawMessage: string) => {
-    const sendMessage = (response: Response | MessageError) => {
-      // log.trace({ event: 'Send', response })
-      outgoingMessageCounter.inc()
-      return ws.send(JSON.stringify(response), (error) => {
-        if (error) log.error(error)
+    const sendMessage = (response: Response | MessageError) =>
+      sendAsync(ws, JSON.stringify(response)).map(() => {
+        log.trace({ event: 'SendMessageToClient', response })
+        outgoingMessageCounter.inc()
       })
-    }
 
     const handleDataChannelMessage = (incomingMessage: string) => {
-      parseJSON<DataChannelMessage>(incomingMessage)
-        .map((parsed) => {
-          if (parsed.clientId !== ws.id) {
+      parseJSON<DataChannelMessage['data']>(incomingMessage)
+        .asyncAndThen((parsed) =>
+          sendMessage(parsed).map(() => {
             log.trace({
               event: 'IncomingDataChanelMessage',
-              message: parsed.data,
+              message: parsed,
             })
-
-            sendMessage(parsed.data)
-          }
-        })
+          })
+        )
         .mapErr((err) => {
           log.error(err)
         })
@@ -66,55 +76,37 @@ export const messageFns = (
 
     return parseMessage(rawMessage)
       .andThen(validateMessage)
-      .map((message) => {
-        log.trace({ event: 'IncomingMessage', message, clientId: ws.id })
-        ws.connectionId = message.connectionId
-
-        // clientRepo.add(ws.connectionId, ws.id, ws)
-
-        if (!ws.dataChanel) {
-          addClient(message.connectionId, ws.id)
-            .map(() => {
-              ws.dataChanel = createDataChannel(ws.id, handleDataChannelMessage)
-
-              ws.removeDataChanel = () => {
-                if (ws.dataChanel) {
-                  ws.dataChanel.unsubscribe()
-                  ws.dataChanel = undefined
-                  ws.removeDataChanel = undefined
-                }
-              }
-            })
-            .mapErr((error) => {
-              log.error(error)
-            })
-        }
-
-        return message
-      })
       .asyncAndThen((message) => {
-        return getClients(ws.connectionId)
-          .map((ids) => ids.filter((id) => id !== ws.id))
-          .map((clientIds) => {
-            const outgoingMessage: DataChannelMessage = {
-              instanceId: config.instanceId,
-              clientId: ws.id,
-              data: message,
-            }
-            return combineWithAllErrors(
-              clientIds.map((id) =>
-                publish(id, JSON.stringify(outgoingMessage))
-              )
+        log.trace({ event: 'IncomingMessage', message, clientId: ws.id })
+        const dataChannelId = dataChannelRepo.getId(ws)
+
+        if (dataChannelId) return okAsync({ message, dataChannelId })
+
+        return dataChannelRepo
+          .add(ws, handleDataChannelMessage)
+          .mapErr(handleDataChannelError(message))
+          .andThen((id) =>
+            addClient(message.connectionId, id)
+              .mapErr(handleAddClientError(message))
+              .map(() => id)
+          )
+          .map((id) => {
+            return { message, dataChannelId: id }
+          })
+      })
+
+      .andThen(({ message, dataChannelId }) =>
+        getClients(message.connectionId)
+          .map((ids) => ids.filter((id) => id !== dataChannelId))
+          .map((clientIds) =>
+            combineWithAllErrors(
+              clientIds.map((id) => publish(id, JSON.stringify(message)))
             ).mapErr((errors) => errors.map(handlePublishError(message)))
-          })
-          .map(() => {
-            sendMessage({ valid: message })
-          })
+          )
+          .andThen(() => sendMessage({ valid: message }))
           .mapErr(handlePublishError(message))
-      })
-      .mapErr((error) => {
-        sendMessage(error)
-      })
+      )
+      .mapErr(sendMessage)
   }
 
   return { handleIncomingMessage }
