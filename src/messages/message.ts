@@ -26,7 +26,6 @@ export const messageFns = (
     handleMessageError({
       message,
       name: 'PublishError',
-      handler: message.method,
       errorMessage: `could not publish for connectionId: ${message.connectionId}`,
     })
 
@@ -34,7 +33,6 @@ export const messageFns = (
     handleMessageError({
       message,
       name: 'DataChannelError',
-      handler: message.method,
       errorMessage: `could not open data chanel`,
     })
 
@@ -59,25 +57,25 @@ export const messageFns = (
         outgoingMessageCounter.inc()
       })
 
-    const handleDataChannelMessage = (incomingMessage: string) => {
-      parseJSON<DataChannelMessage['data']>(incomingMessage)
-        .asyncAndThen((parsed) =>
-          sendMessage(parsed).map(() => {
-            log.trace({
-              event: 'IncomingDataChanelMessage',
-              message: parsed,
-            })
+    const handleDataChannelMessage = (rawMessage: string) => {
+      parseJSON<MessageTypesObjects>(rawMessage)
+        .map((message) => {
+          log.trace({
+            event: 'IncomingDataChanelMessage',
+            message,
+          })
+          return message
+        })
+        .asyncAndThen((message) =>
+          sendMessage(message).mapErr((error) => {
+            log.error({ event: 'OutgoingWSMessage', error, message })
           })
         )
-        .mapErr((err) => {
-          if (err.message === 'WebSocket is not open: readyState 3 (CLOSED)')
-            return
-          log.error(err)
-        })
     }
 
     return parseMessage(rawMessage)
       .andThen(validateMessage)
+      .mapErr(sendMessage)
       .asyncAndThen((message) => {
         log.trace({ event: 'IncomingMessage', message })
         const dataChannelId = dataChannelRepo.getId(ws)
@@ -90,11 +88,8 @@ export const messageFns = (
           .andThen((id) =>
             addClient(message.connectionId, id)
               .mapErr(handleAddClientError(message))
-              .map(() => id)
+              .map(() => ({ message, dataChannelId: id }))
           )
-          .map((id) => {
-            return { message, dataChannelId: id }
-          })
       })
 
       .andThen(({ message, dataChannelId }) =>
@@ -106,9 +101,7 @@ export const messageFns = (
             ).mapErr((errors) => errors.map(handlePublishError(message)))
           )
           .andThen(() => sendMessage({ valid: message }))
-          .mapErr(handlePublishError(message))
       )
-      .mapErr(sendMessage)
   }
 
   return { handleIncomingMessage }

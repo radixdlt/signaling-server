@@ -24,19 +24,16 @@ export const handleMessageError =
     message,
     name,
     errorMessage,
-    handler,
   }: {
     name: ErrorName
     errorMessage?: string
     message?: MessageTypesObjects
-    handler?: MessageTypes
   }) =>
   (jsError: Error): MessageError => {
     log.error({
       errorName: name,
       errorMessage,
       message,
-      handler,
       jsError: {
         name: jsError.name,
         message: jsError.message,
