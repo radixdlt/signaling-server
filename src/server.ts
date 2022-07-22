@@ -26,12 +26,6 @@ const server = async () => {
     redis.publish
   )
 
-  // TODO: handle redis errors
-  redis.error$.subscribe((error) => {
-    console.error(error)
-    log.error({ errorName: 'RedisError', error: JSON.stringify(error) })
-  })
-
   wss.on('connection', (ws) => {
     log.info({ event: `ClientConnected`, clients: wss.clients.size })
     connectedClientsGauge.set(wss.clients.size)
