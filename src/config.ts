@@ -10,8 +10,9 @@ const getEnv = (key: string) => {
 
 type Config = {
   redis: {
-    host: string
-    password: string
+    pub_host: string
+    sub_host: string
+    password: string | undefined
     port: number
     pubSubDataChannel: string
   }
@@ -25,8 +26,9 @@ type Config = {
 
 export const config: Config = {
   redis: {
-    host: getEnv('REDIS_HOST'),
-    password: getEnv('REDIS_PASSWORD'),
+    pub_host: getEnv('REDIS_HOST_PUB'),
+    sub_host: getEnv('REDIS_HOST_SUBS'),
+    password: process.env.REDIS_PASSWORD,
     port: parseInt(getEnv('REDIS_PORT')),
     pubSubDataChannel: 'data',
   },

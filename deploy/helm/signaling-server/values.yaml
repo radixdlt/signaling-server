@@ -4,7 +4,10 @@ server:
   nodeEnv: production
 
 redis:
-  host: redis-master
+  sub:
+    host: redis-master
+  pub:
+    host: redis-master
   port: 6379
   password: redis
 
@@ -70,23 +73,28 @@ ingress:
       hosts:
         - signaling-server-dev.extratools.works
 
+javascriptHeap: 5096
 resources:
   limits:
-    cpu: 500m
-    memory: 300Mi
+    cpu: 2000m
+#    memory: 6Gi
   requests:
-    cpu: 200m
-    memory: 300Mi
+    cpu: 2000m
+    memory: 6Gi
 
 autoscaling:
   enabled: true
-  minReplicas: 5
-  maxReplicas: 30
+  minReplicas: 4
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 60
 
 nodeSelector: {}
 
-tolerations: []
+tolerations:
+  - key: 'signaling-server'
+    operator: 'Equal'
+    value: 'true'
+    effect: 'NoSchedule'
 
 affinity: {}
 

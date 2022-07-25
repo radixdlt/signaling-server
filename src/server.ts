@@ -29,13 +29,13 @@ const server = async () => {
 
   // TODO: handle redis errors
   redis.error$.subscribe((error) => {
-    log.error({ errorName: 'RedisError', error })
+    log.error({ errorName: 'RedisError', error: JSON.stringify(error) })
   })
 
   handleDataChannel(redis.data$).subscribe()
 
   wss.on('connection', (ws) => {
-    log.info({ event: `ClientConnected`, clients: wss.clients.size })
+    log.trace({ event: `ClientConnected`, clients: wss.clients.size })
     connectedClientsGauge.set(wss.clients.size)
 
     ws.id = v4()
@@ -47,7 +47,11 @@ const server = async () => {
 
     ws.on('message', async (messageBuffer) => {
       incomingMessageCounter.inc()
-      await handleIncomingMessage(ws, messageBuffer)
+      try {
+        await handleIncomingMessage(ws, messageBuffer)
+      } catch (error) {
+        log.error(error)
+      }
     })
 
     ws.onerror = (event) => {
@@ -56,7 +60,7 @@ const server = async () => {
 
     ws.onclose = () => {
       connectedClientsGauge.set(wss.clients.size)
-      log.info({
+      log.trace({
         event: 'ClientDisconnected',
         clients: wss.clients.size,
       })
@@ -64,9 +68,7 @@ const server = async () => {
   })
 }
 
-try {
-  server()
-} catch (error) {
+server().catch((error) => {
+  console.error(error)
   log.error(error)
-  throw error
-}
+})

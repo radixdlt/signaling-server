@@ -17,7 +17,8 @@ services:
       - '4000:4000'
       - '4001:4001'
     environment:
-      REDIS_HOST: redis
+      REDIS_HOST_PUB: redis
+      REDIS_HOST_SUBS: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
       PORT: 4000

@@ -4,23 +4,61 @@ import { config } from '../config'
 import { Subject } from 'rxjs'
 import { combine, ResultAsync } from 'neverthrow'
 
+type RedisClientConfig = Parameters<typeof createClient>[0]
+
 export const redisClient = () => {
-  const options = {
-    url: `redis://${config.redis.host}:${config.redis.port}`,
-    password: config.redis.password,
+  const subscriberConfig: RedisClientConfig = {
+    url: `redis://${config.redis.sub_host}:${config.redis.port}`,
   }
-  const subscriber = createClient(options)
-  const publisher = createClient(options)
+  const publisherConfig: RedisClientConfig = {
+    url: `redis://${config.redis.pub_host}:${config.redis.port}`,
+  }
+
+  if (config.redis.password) {
+    subscriberConfig.password = config.redis.password
+    publisherConfig.password = config.redis.password
+  }
+
+  const subscriber = createClient(subscriberConfig)
+  const publisher = createClient(publisherConfig)
 
   const errorSubject = new Subject<any>()
   const dataSubject = new Subject<string>()
 
   subscriber.on('error', (err) => {
+    console.error(err)
     errorSubject.next(err)
   })
 
   publisher.on('error', (err) => {
+    console.error(err)
     errorSubject.next(err)
+  })
+
+  subscriber.on('connect', () => {
+    log.info('RedisSubClient connect')
+  })
+  subscriber.on('ready', () => {
+    log.info('RedisSubClient ready')
+  })
+  subscriber.on('end', () => {
+    log.info('RedisSubClient end')
+  })
+  subscriber.on('reconnecting', () => {
+    log.info('RedisSubClient reconnecting')
+  })
+
+  publisher.on('connect', () => {
+    log.info('RedisPubClient connect')
+  })
+  publisher.on('ready', () => {
+    log.info('RedisPubClient ready')
+  })
+  publisher.on('end', () => {
+    log.info('RedisPubClient end')
+  })
+  publisher.on('reconnecting', () => {
+    log.info('RedisPubClient reconnecting')
   })
 
   const publish = (
@@ -38,7 +76,7 @@ export const redisClient = () => {
   ) =>
     ResultAsync.fromPromise(redisClient.connect(), (e) => e as Error).map(
       () => {
-        log.trace({ event: 'OpenRedisConnection', clientName: name })
+        log.info({ event: 'OpenRedisConnection', clientName: name })
       }
     )
 

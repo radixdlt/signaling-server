@@ -1,4 +1,5 @@
 import client from 'prom-client'
+import gcStats from 'prometheus-gc-stats'
 
 export const connectedClientsGauge = new client.Gauge({
   name: 'signaling_server_connected_clients',
@@ -24,5 +25,9 @@ export const subscribeMessageCounter = new client.Counter({
   name: 'signaling_server_subscribe_messages',
   help: 'Number of subscribed messages',
 })
+
+gcStats(client.register, {
+  prefix: 'signaling_server_',
+})()
 
 export const prometheusClient = client
