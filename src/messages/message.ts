@@ -73,35 +73,37 @@ export const messageFns = (
         )
     }
 
-    return parseMessage(rawMessage)
-      .andThen(validateMessage)
-      .mapErr(sendMessage)
-      .asyncAndThen((message) => {
-        log.trace({ event: 'IncomingMessage', message })
-        const dataChannelId = dataChannelRepo.getId(ws)
+    return (
+      parseMessage(rawMessage)
+        // .andThen(validateMessage)
+        .mapErr(sendMessage)
+        .asyncAndThen((message) => {
+          log.trace({ event: 'IncomingMessage', message })
+          const dataChannelId = dataChannelRepo.getId(ws)
 
-        if (dataChannelId) return okAsync({ message, dataChannelId })
+          if (dataChannelId) return okAsync({ message, dataChannelId })
 
-        return dataChannelRepo
-          .add(ws, handleDataChannelMessage)
-          .mapErr(handleDataChannelError(message))
-          .andThen((id) =>
-            addClient(message.connectionId, id)
-              .mapErr(handleAddClientError(message))
-              .map(() => ({ message, dataChannelId: id }))
-          )
-      })
+          return dataChannelRepo
+            .add(ws, handleDataChannelMessage)
+            .mapErr(handleDataChannelError(message))
+            .andThen((id) =>
+              addClient(message.connectionId, id)
+                .mapErr(handleAddClientError(message))
+                .map(() => ({ message, dataChannelId: id }))
+            )
+        })
 
-      .andThen(({ message, dataChannelId }) =>
-        getClients(message.connectionId)
-          .map((ids) => ids.filter((id) => id !== dataChannelId))
-          .map((clientIds) =>
-            combineWithAllErrors(
-              clientIds.map((id) => publish(id, JSON.stringify(message)))
-            ).mapErr((errors) => errors.map(handlePublishError(message)))
-          )
-          .andThen(() => sendMessage({ valid: message }))
-      )
+        .andThen(({ message, dataChannelId }) =>
+          getClients(message.connectionId)
+            .map((ids) => ids.filter((id) => id !== dataChannelId))
+            .map((clientIds) =>
+              combineWithAllErrors(
+                clientIds.map((id) => publish(id, JSON.stringify(message)))
+              ).mapErr((errors) => errors.map(handlePublishError(message)))
+            )
+            .andThen(() => sendMessage({ valid: message }))
+        )
+    )
   }
 
   return { handleIncomingMessage }
