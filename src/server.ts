@@ -26,7 +26,7 @@ const server = async () => {
   )
 
   wss.on('connection', (ws) => {
-    log.info({ event: `ClientConnected`, clients: wss.clients.size })
+    log.debug({ event: `ClientConnected`, clients: wss.clients.size })
     connectedClientsGauge.set(wss.clients.size)
 
     ws.isAlive = true
