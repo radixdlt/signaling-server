@@ -1,7 +1,6 @@
 import { log } from './utils/log'
 import { messageFns } from './messages'
 import { websocketServer } from './websocket/websocket-server'
-import { v4 } from 'uuid'
 import { redisClient } from './data'
 import {
   connectedClientsGauge,
@@ -39,7 +38,9 @@ const server = async () => {
     ws.onmessage = async (event) => {
       try {
         incomingMessageCounter.inc()
-        await handleIncomingMessage(ws, event.data.toString())
+        await handleIncomingMessage(ws, event.data.toString()).mapErr((err) =>
+          log.error(err)
+        )
       } catch (error) {
         console.error(error)
       }
