@@ -10,7 +10,7 @@ const makeLogger = () => {
     options.transport = { target: 'pino-pretty' }
   }
 
-  return pino(options, pino.destination({ sync: true }))
+  return pino(options)
 }
 
 export const log = makeLogger()
