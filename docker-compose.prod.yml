@@ -16,14 +16,15 @@ services:
       - '4000:4000'
       - '4001:4001'
     environment:
-      REDIS_HOST: redis
+      REDIS_HOST_PUB: redis
+      REDIS_HOST_SUBS: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-      WS_PORT: 4000
+      PORT: 4000
       HTTP_PORT: 4001
-      LOG_LEVEL: trace
-      NODE_ENV: prod
-    command: npm start
+      LOG_LEVEL: info
+      NODE_ENV: production
+    command: yarn start
     depends_on:
       - redis
   redis:

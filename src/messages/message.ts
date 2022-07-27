@@ -44,15 +44,16 @@ export const messageFns = (
 
   const parseMessage = (text: string) => parseJSON<MessageTypesObjects>(text)
 
-  const handleIncomingMessage = (
-    ws: WebSocket,
-    rawMessage: string
-  ): ResultAsync<void, Error> => {
-    const sendMessage = (response: Response) =>
-      sendAsync(ws, JSON.stringify(response)).map(() => {
-        log.trace({ event: 'SendMessageToClient', response })
-        outgoingMessageCounter.inc()
-      })
+  const handleIncomingMessage = (ws: WebSocket, rawMessage: string) => {
+    const sendMessage = (response: Response) => {
+      ws.send(JSON.stringify(response))
+      log.trace({ event: 'SendMessageToClient', response })
+      outgoingMessageCounter.inc()
+      // return sendAsync(ws, JSON.stringify(response)).map(() => {
+      //   log.trace({ event: 'SendMessageToClient', response })
+      //   outgoingMessageCounter.inc()
+      // })
+    }
 
     const handleDataChannelMessage = (rawMessage: string) => {
       parseJSON<MessageTypesObjects>(rawMessage)
@@ -63,10 +64,11 @@ export const messageFns = (
           })
           return message
         })
-        .asyncAndThen((message) =>
-          sendMessage(message).mapErr((error) => {
-            log.error({ event: 'OutgoingWSMessage', error, message })
-          })
+        .map(
+          (message) => sendMessage(message)
+          // .mapErr((error) => {
+          //   log.error({ event: 'OutgoingWSMessage', error, message })
+          // })
         )
     }
 
@@ -108,7 +110,7 @@ export const messageFns = (
                 )
               // .mapErr((errors) => errors.map(handlePublishError(message)))
             )
-            .andThen(() => sendMessage({ valid: message }))
+            .map(() => sendMessage({ valid: message }))
         )
     )
   }
