@@ -1,5 +1,5 @@
 up:
-	docker-compose up -d
+	docker-compose up
 
 up-prod:
 	docker-compose -f ./docker-compose.prod.yml up -d --build

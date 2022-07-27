@@ -1,4 +1,4 @@
-import { combineWithAllErrors, okAsync, ResultAsync } from 'neverthrow'
+import { combine, combineWithAllErrors, okAsync, ResultAsync } from 'neverthrow'
 import { parseJSON } from '../utils/utils'
 import { handleMessageError, MessageError } from '../utils/error'
 import { validateMessage } from './validate'
@@ -42,16 +42,13 @@ export const messageFns = (
       message,
     })
 
-  const parseMessage = (text: string) =>
-    parseJSON<MessageTypesObjects>(text).mapErr(
-      handleMessageError({
-        name: 'InvalidJsonError',
-        errorMessage: `unable to parse message: ${text}`,
-      })
-    )
+  const parseMessage = (text: string) => parseJSON<MessageTypesObjects>(text)
 
-  const handleIncomingMessage = (ws: WebSocket, rawMessage: string) => {
-    const sendMessage = (response: Response | MessageError) =>
+  const handleIncomingMessage = (
+    ws: WebSocket,
+    rawMessage: string
+  ): ResultAsync<void, Error> => {
+    const sendMessage = (response: Response) =>
       sendAsync(ws, JSON.stringify(response)).map(() => {
         log.trace({ event: 'SendMessageToClient', response })
         outgoingMessageCounter.inc()
@@ -75,31 +72,41 @@ export const messageFns = (
 
     return (
       parseMessage(rawMessage)
+        // .mapErr(
+        //   handleMessageError({
+        //     name: 'InvalidJsonError',
+        //     errorMessage: `unable to parse message: ${text}`,
+        //   })
+        // )
         // .andThen(validateMessage)
-        .mapErr(sendMessage)
+        // .mapErr(sendMessage)
         .asyncAndThen((message) => {
           log.trace({ event: 'IncomingMessage', message })
           const dataChannelId = dataChannelRepo.getId(ws)
 
           if (dataChannelId) return okAsync({ message, dataChannelId })
 
-          return dataChannelRepo
+          const res = dataChannelRepo
             .add(ws, handleDataChannelMessage)
-            .mapErr(handleDataChannelError(message))
+            // .mapErr(handleDataChannelError(message))
             .andThen((id) =>
               addClient(message.connectionId, id)
-                .mapErr(handleAddClientError(message))
+                // .mapErr(handleAddClientError(message))
                 .map(() => ({ message, dataChannelId: id }))
             )
+
+          return res
         })
 
         .andThen(({ message, dataChannelId }) =>
           getClients(message.connectionId)
             .map((ids) => ids.filter((id) => id !== dataChannelId))
-            .map((clientIds) =>
-              combineWithAllErrors(
-                clientIds.map((id) => publish(id, JSON.stringify(message)))
-              ).mapErr((errors) => errors.map(handlePublishError(message)))
+            .map(
+              (clientIds) =>
+                combine(
+                  clientIds.map((id) => publish(id, JSON.stringify(message)))
+                )
+              // .mapErr((errors) => errors.map(handlePublishError(message)))
             )
             .andThen(() => sendMessage({ valid: message }))
         )

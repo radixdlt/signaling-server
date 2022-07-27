@@ -38,9 +38,18 @@ const server = async () => {
     ws.onmessage = async (event) => {
       try {
         incomingMessageCounter.inc()
-        await handleIncomingMessage(ws, event.data.toString()).mapErr((err) =>
-          log.error(err)
-        )
+        const result = await handleIncomingMessage(ws, event.data.toString())
+
+        if (result.isErr()) {
+          const error = result.error
+          if (error.message === 'write EPIPE') return
+          log.error(error)
+        }
+
+        // .((err) => {
+        //   if (err.message === 'write EPIPE') return
+        //   return log.error(err)
+        // })
       } catch (error) {
         console.error(error)
       }

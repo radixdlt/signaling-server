@@ -13,9 +13,11 @@ services:
     expose:
       - '4000'
       - '4001'
+      - '9229'
     ports:
       - '4000:4000'
       - '4001:4001'
+      - '9229:9229'
     environment:
       REDIS_HOST_PUB: redis
       REDIS_HOST_SUBS: redis
@@ -23,7 +25,7 @@ services:
       REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
       PORT: 4000
       HTTP_PORT: 4001
-      LOG_LEVEL: trace
+      LOG_LEVEL: info
       NODE_ENV: dev
     command: npm run dev
     depends_on:
