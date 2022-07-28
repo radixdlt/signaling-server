@@ -46,7 +46,7 @@ export const config: Config = {
     heartbeatInterval: 30 * 1000,
   },
   queue: {
-    concurrency: parseInt(process.env.CONCURRENCY || '100'),
+    concurrency: parseInt(process.env.CONCURRENCY || '1000'),
     expirationTime: parseInt(
       process.env.EXPIRATION_TIME_MS || `${3600 * 1000}`
     ),

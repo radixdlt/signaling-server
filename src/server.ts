@@ -43,11 +43,15 @@ const SimpleQueue = (
 
   messageSubject
     .pipe(
-      bufferTime(1000, null, config.queue.concurrency),
+      bufferTime(100, null, config.queue.concurrency),
       filter((items) => items.length > 0),
       concatMap((items) => {
         return forkJoin(
           items.map((item) => {
+            if (!wsRepo.has(item.ws.id)) {
+              --count
+              return Promise.resolve()
+            }
             return handleIncomingMessage(item.ws, item.data)
               .map(() => {
                 --count
@@ -62,7 +66,8 @@ const SimpleQueue = (
       }),
       tap(() => {
         queueSizeGauge.set(count)
-        log.trace(`messages in queue: ${count}`)
+        console.log(`messages in queue: ${count}`)
+        // log.info(`messages in queue: ${count}`)
       }),
       catchError((error) => {
         log.error(error)
@@ -107,9 +112,9 @@ const server = async () => {
       ws.isAlive = true
     })
 
-    ws.onmessage = (event) => {
-      incomingMessageCounter.inc()
-      return queue.add({ ws, data: event.data.toString() })
+    ws.onmessage = async (event) => {
+      // queue.add({ ws, data: event.data.toString() })
+      // incomingMessageCounter.inc()
       // incomingMessageCounter.inc()
       // await messageQueue.add(
       //   randomUUID(),
@@ -119,30 +124,33 @@ const server = async () => {
       //   },
       //   { removeOnComplete: true, removeOnFail: true }
       // )
-      // try {
-      //   incomingMessageCounter.inc()
-      //   const result = await handleIncomingMessage(ws, event.data.toString())
-      //   if (result.isErr()) {
-      //     const error = result.error
-      //     if (error.message === 'write EPIPE') return
-      //     log.error(error)
-      //   }
-      // } catch (error) {
-      //   console.error(error)
-      // }
+      incomingMessageCounter.inc()
+      if (!wsRepo.has(ws.id)) {
+        return
+      }
+      try {
+        const result = await handleIncomingMessage(ws, event.data.toString())
+        if (result.isErr()) {
+          const error = result.error
+          if (error.message === 'write EPIPE') return
+          log.error(error)
+        }
+      } catch (error) {
+        console.error(error)
+      }
     }
 
     ws.onerror = (event) => {
       log.error(event.error)
     }
 
-    ws.onclose = () => {
+    ws.onclose = async () => {
       connectedClientsGauge.set(wss.clients.size)
       log.trace({
         event: 'ClientDisconnected',
         clients: wss.clients.size,
       })
-      dataChannelRepo.remove(ws)
+      await dataChannelRepo.remove(ws)
       wsRepo.delete(ws.id)
     }
   })
