@@ -8,7 +8,7 @@ import './http/http-server'
 import { DataChannelRepo } from './data/data-channel-repo'
 import { wsRepo } from './data/websocket-repo'
 import { config } from './config'
-import uWs from 'uWebSockets.js'
+import uWs, { DEDICATED_COMPRESSOR_3KB } from 'uWebSockets.js'
 
 const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
 collectDefaultMetrics()
@@ -46,10 +46,10 @@ const server = async () => {
   const wws = uWs
     .App()
     .ws('/*', {
-      open: (ws) => {
-        log.info('ws open')
-      },
-      message: async (ws, message, isBinary) => {
+      maxPayloadLength: 512,
+      compression: DEDICATED_COMPRESSOR_3KB,
+      open: () => {},
+      message: async (ws, message) => {
         incomingMessageCounter.inc()
         if (rateLimit(ws)) {
           ws.send(
@@ -58,8 +58,7 @@ const server = async () => {
               data: 'over limit! please slow down.',
             })
           )
-          log.info(`hit rate limit`)
-          return ws.end()
+          return ws.end(429, 'Too Many Requests')
         }
         try {
           const result = await handleIncomingMessage(
