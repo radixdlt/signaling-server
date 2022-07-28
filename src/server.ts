@@ -42,7 +42,12 @@ const server = async () => {
             if (error.message === 'write EPIPE') return
             log.error(error)
           }
-        } catch (error) {
+        } catch (error: any) {
+          if (
+            error.message ===
+            'Invalid access of closed uWS.WebSocket/SSLWebSocket.'
+          )
+            return
           log.error(error)
         }
       },
