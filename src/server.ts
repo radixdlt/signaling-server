@@ -58,7 +58,7 @@ const server = async () => {
               data: 'over limit! please slow down.',
             })
           )
-          return ws.end(429, 'Too Many Requests')
+          return ws.end(1008, 'Too Many Requests')
         }
         try {
           const result = await handleIncomingMessage(
