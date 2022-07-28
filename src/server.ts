@@ -28,7 +28,7 @@ const RateLimit = (limit: number, interval: number) => {
   }
 }
 
-const rateLimit = RateLimit(config.rateLimit.messages, config.rateLimit.time)
+// const rateLimit = RateLimit(config.rateLimit.messages, config.rateLimit.time)
 
 const server = async () => {
   const redis = await redisClient()
@@ -49,27 +49,25 @@ const server = async () => {
       // maxPayloadLength: 512,
       // compression: DEDICATED_COMPRESSOR_3KB,
       open: () => {},
-      message: async (ws, message) => {
+      message: (ws, message) => {
         incomingMessageCounter.inc()
-        if (rateLimit(ws)) {
-          ws.send(
-            JSON.stringify({
-              action: 'info',
-              data: 'over limit! please slow down.',
-            })
-          )
-          return ws.end(1008, 'Too Many Requests')
-        }
+        // if (rateLimit(ws)) {
+        //   ws.send(
+        //     JSON.stringify({
+        //       action: 'info',
+        //       data: 'over limit! please slow down.',
+        //     })
+        //   )
+        //   return ws.end(1008, 'Too Many Requests')
+        // }
         try {
-          const result = await handleIncomingMessage(
+          handleIncomingMessage(
             ws,
             Buffer.from(message).toString('utf8')
-          )
-          if (result.isErr()) {
-            const error = result.error
+          ).mapErr((error) => {
             if (!error || (error && error.message === 'write EPIPE')) return
             log.error(error)
-          }
+          })
         } catch (error: any) {
           if (
             error.message ===
@@ -82,13 +80,13 @@ const server = async () => {
       drain: (ws) => {
         console.log('WebSocket backpressure: ' + ws.getBufferedAmount())
       },
-      close: async (ws, code, message) => {
+      close: (ws, code, message) => {
         // connectedClientsGauge.set(wss.numSubscribers)
         // log.trace({
         //   event: 'ClientDisconnected',
         //   clients: wss.clients.size,
         // })
-        await dataChannelRepo.remove(ws)
+        dataChannelRepo.remove(ws)
         wsRepo.delete(ws.id)
       },
     })
