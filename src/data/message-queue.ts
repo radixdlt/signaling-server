@@ -17,7 +17,7 @@ const queueName = `${config.instanceId}-messages`
 const updateExpiration = async () => {
   const now = Date.now()
   const expireAt = now + config.queue.expirationTime
-  log.info(
+  log.trace(
     `redis keys for queue '${queueName}' will expire at: ${expireAt}, current time: ${now}`
   )
   await Promise.all([
@@ -41,7 +41,7 @@ setInterval(async () => {
     queueSizeGauge.set(jobs.waiting + jobs.active)
     queueActiveJobsGauge.set(jobs.active)
   } catch (error) {}
-}, 5_000)
+}, 10_000)
 
 export const messageQueue = new Queue(queueName, {
   connection,
