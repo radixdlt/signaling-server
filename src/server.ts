@@ -32,13 +32,17 @@ const server = async () => {
       open: (ws) => {},
       message: async (ws, message, isBinary) => {
         incomingMessageCounter.inc()
-        const result = await handleIncomingMessage(
-          ws,
-          Buffer.from(message).toString('utf8')
-        )
-        if (result.isErr()) {
-          const error = result.error
-          if (error.message === 'write EPIPE') return
+        try {
+          const result = await handleIncomingMessage(
+            ws,
+            Buffer.from(message).toString('utf8')
+          )
+          if (result.isErr()) {
+            const error = result.error
+            if (error.message === 'write EPIPE') return
+            log.error(error)
+          }
+        } catch (error) {
           log.error(error)
         }
       },
