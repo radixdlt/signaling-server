@@ -26,7 +26,7 @@ export const websocketServer = (
           clients: wss.clients.size,
         })
         connectedClientsGauge.set(wss.clients.size)
-        dataChannelRepo.remove(ws)
+        // dataChannelRepo.remove(ws)
         wsRepo.delete(ws.id)
         return ws.terminate()
       }

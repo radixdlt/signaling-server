@@ -13,24 +13,22 @@ import uWs from 'uWebSockets.js'
 const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
 collectDefaultMetrics()
 
-// const RateLimit = (limit: number, interval: number) => {
-//   let now = 0
-//   const last = Symbol(),
-//     count = Symbol()
-//   setInterval(() => ++now, interval)
-//   return (ws: uWs.WebSocket) => {
-//     // @ts-ignore
-//     if (ws[last] != now) {
-//       // @ts-ignore
-//       ws[last] = now
-//       // @ts-ignore
-//       ws[count] = 1
-//     } else {
-//       // @ts-ignore
-//       return ++ws[count] > limit
-//     }
-//   }
-// }
+const RateLimit = (limit: number, interval: number) => {
+  let now = 0
+  const last = Symbol(),
+    count = Symbol()
+  setInterval(() => ++now, interval)
+  return (ws: any) => {
+    if (ws[last] != now) {
+      ws[last] = now
+      ws[count] = 1
+    } else {
+      return ++ws[count] > limit
+    }
+  }
+}
+
+const rateLimit = RateLimit(config.rateLimit.messages, config.rateLimit.time)
 
 const server = async () => {
   const redis = await redisClient()
@@ -53,15 +51,16 @@ const server = async () => {
       },
       message: async (ws, message, isBinary) => {
         incomingMessageCounter.inc()
-        // if (RateLimit(1, 1000)) {
-        //   const dataToSendToClient = {
-        //     action: 'info',
-        //     data: 'over limit! please slow down.',
-        //   }
-        //   console.log('hitting rate limit')
-        //   await ws.send(JSON.stringify(dataToSendToClient))
-        //   return ws.end()
-        // }
+        if (rateLimit(ws)) {
+          ws.send(
+            JSON.stringify({
+              action: 'info',
+              data: 'over limit! please slow down.',
+            })
+          )
+          log.info(`hit rate limit`)
+          return ws.end()
+        }
         try {
           const result = await handleIncomingMessage(
             ws,
