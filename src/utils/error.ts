@@ -17,7 +17,11 @@ export type ErrorName =
   | 'InternalError'
   | 'DataChannelError'
 
-export type MessageError = { name: ErrorName; errorMessage?: string }
+export type MessageError = {
+  name: ErrorName
+  errorMessage?: string
+  error: Error
+}
 
 export const handleMessageError =
   ({
@@ -40,5 +44,5 @@ export const handleMessageError =
         stack: jsError.stack,
       },
     })
-    return { name, errorMessage }
+    return { name, errorMessage, error: jsError }
   }

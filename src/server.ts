@@ -11,14 +11,18 @@ import {
 } from './metrics/metrics'
 import './http/http-server'
 import { DataChannelRepo } from './data/data-channel-repo'
+import { createWorker, messageQueue } from './data/message-queue'
+import { randomUUID } from 'node:crypto'
+import { wsRepo } from './data/websocket-repo'
 
 const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
 collectDefaultMetrics()
 
 const server = async () => {
   const redis = await redisClient()
+
   const dataChannelRepo = DataChannelRepo(redis.createDataChannel)
-  const { wss } = websocketServer(dataChannelRepo)
+  const { wss } = websocketServer(dataChannelRepo, wsRepo)
 
   const { handleIncomingMessage } = messageFns(
     dataChannelRepo,
@@ -27,29 +31,41 @@ const server = async () => {
     redis.publish
   )
 
+  const worker = createWorker(wsRepo, handleIncomingMessage)
+
   wss.on('connection', (ws) => {
     log.debug({ event: `ClientConnected`, clients: wss.clients.size })
     connectedClientsGauge.set(wss.clients.size)
 
     ws.isAlive = true
+    ws.id = randomUUID()
+    wsRepo.set(ws.id, ws)
 
     ws.on('pong', () => {
       ws.isAlive = true
     })
 
     ws.onmessage = async (event) => {
-      try {
-        incomingMessageCounter.inc()
-        const result = await handleIncomingMessage(ws, event.data.toString())
-
-        if (result.isErr()) {
-          const error = result.error
-          if (error.message === 'write EPIPE') return
-          log.error(error)
-        }
-      } catch (error) {
-        console.error(error)
-      }
+      incomingMessageCounter.inc()
+      await messageQueue.add(
+        randomUUID(),
+        {
+          id: ws.id,
+          data: event.data.toString(),
+        },
+        { removeOnComplete: true, removeOnFail: true }
+      )
+      // try {
+      //   incomingMessageCounter.inc()
+      //   const result = await handleIncomingMessage(ws, event.data.toString())
+      //   if (result.isErr()) {
+      //     const error = result.error
+      //     if (error.message === 'write EPIPE') return
+      //     log.error(error)
+      //   }
+      // } catch (error) {
+      //   console.error(error)
+      // }
     }
 
     ws.onerror = (event) => {
@@ -63,6 +79,7 @@ const server = async () => {
         clients: wss.clients.size,
       })
       dataChannelRepo.remove(ws)
+      wsRepo.delete(ws.id)
     }
   })
 }

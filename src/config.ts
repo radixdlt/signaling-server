@@ -22,6 +22,11 @@ type Config = {
   nodeEnv: string
   instanceId: string
   ws: { heartbeatInterval: number }
+  queue: {
+    concurrency: number
+    expirationTime: number
+    intervalTime: number
+  }
 }
 
 export const config: Config = {
@@ -39,5 +44,12 @@ export const config: Config = {
   instanceId: v4(),
   ws: {
     heartbeatInterval: 30 * 1000,
+  },
+  queue: {
+    concurrency: parseInt(process.env.CONCURRENCY || '100'),
+    expirationTime: parseInt(
+      process.env.EXPIRATION_TIME_MS || `${3600 * 1000}`
+    ),
+    intervalTime: 60 * 1000,
   },
 }

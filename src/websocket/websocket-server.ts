@@ -8,10 +8,14 @@ import { DataChannelRepoType } from 'data/data-channel-repo'
 declare module 'ws' {
   interface WebSocket {
     isAlive: boolean
+    id: string
   }
 }
 
-export const websocketServer = (dataChannelRepo: DataChannelRepoType) => {
+export const websocketServer = (
+  dataChannelRepo: DataChannelRepoType,
+  wsRepo: Map<string, WebSocket>
+) => {
   const wss = new WebSocketServer({ port: config.port })
 
   const handleClientHeartbeat = (wss: WebSocketServer) => () => {
@@ -23,6 +27,7 @@ export const websocketServer = (dataChannelRepo: DataChannelRepoType) => {
         })
         connectedClientsGauge.set(wss.clients.size)
         dataChannelRepo.remove(ws)
+        wsRepo.delete(ws.id)
         return ws.terminate()
       }
 

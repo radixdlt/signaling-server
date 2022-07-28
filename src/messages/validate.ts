@@ -16,7 +16,7 @@ const validate = (
     log.error({ event: 'ValidationError', error })
     return err({
       name: 'ValidationError',
-      error,
+      error: error as Error,
     })
   }
 }
@@ -35,6 +35,10 @@ export const validateMessage = (
       return validate(IceCandidateIO, message)
 
     default:
-      return err({ name: 'MissingMethodError', errorMessage: 'invalid method' })
+      return err({
+        name: 'MissingMethodError',
+        errorMessage: 'invalid method',
+        error: Error('invalid method'),
+      })
   }
 }

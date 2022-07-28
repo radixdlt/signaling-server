@@ -10,8 +10,10 @@ import { DataChannelRepoType } from '../data/data-channel-repo'
 import { sendAsync } from '../websocket/send-async'
 
 type ValidResponse = { valid: MessageTypesObjects }
-type ErrorResponse = { ok: false; error: MessageError }
-export type Response = ValidResponse | MessageTypesObjects | ErrorResponse
+export type Response =
+  | ValidResponse
+  | MessageTypesObjects
+  | { errorMessage?: string; name: string }
 
 export const messageFns = (
   dataChannelRepo: DataChannelRepoType,
@@ -72,47 +74,48 @@ export const messageFns = (
         )
     }
 
-    return (
-      parseMessage(rawMessage)
-        // .mapErr(
-        //   handleMessageError({
-        //     name: 'InvalidJsonError',
-        //     errorMessage: `unable to parse message: ${text}`,
-        //   })
-        // )
-        // .andThen(validateMessage)
-        // .mapErr(sendMessage)
-        .asyncAndThen((message) => {
-          log.trace({ event: 'IncomingMessage', message })
-          const dataChannelId = dataChannelRepo.getId(ws)
-
-          if (dataChannelId) return okAsync({ message, dataChannelId })
-
-          const res = dataChannelRepo
-            .add(ws, handleDataChannelMessage)
-            // .mapErr(handleDataChannelError(message))
-            .andThen((id) =>
-              addClient(message.connectionId, id)
-                // .mapErr(handleAddClientError(message))
-                .map(() => ({ message, dataChannelId: id }))
-            )
-
-          return res
+    return parseMessage(rawMessage)
+      .mapErr(
+        handleMessageError({
+          name: 'InvalidJsonError',
+          errorMessage: `unable to parse message: ${rawMessage}`,
         })
+      )
+      .andThen(validateMessage)
+      .mapErr((err) => {
+        sendMessage({ errorMessage: err.errorMessage, name: err.name })
+        return err.error
+      })
+      .asyncAndThen((message) => {
+        log.trace({ event: 'IncomingMessage', message })
+        const dataChannelId = dataChannelRepo.getId(ws)
 
-        .andThen(({ message, dataChannelId }) =>
-          getClients(message.connectionId)
-            .map((ids) => ids.filter((id) => id !== dataChannelId))
-            .map(
-              (clientIds) =>
-                combine(
-                  clientIds.map((id) => publish(id, JSON.stringify(message)))
-                )
-              // .mapErr((errors) => errors.map(handlePublishError(message)))
-            )
-            .map(() => sendMessage({ valid: message }))
-        )
-    )
+        if (dataChannelId) return okAsync({ message, dataChannelId })
+
+        const res = dataChannelRepo
+          .add(ws, handleDataChannelMessage)
+          // .mapErr(handleDataChannelError(message))
+          .andThen((id) =>
+            addClient(message.connectionId, id)
+              // .mapErr(handleAddClientError(message))
+              .map(() => ({ message, dataChannelId: id }))
+          )
+
+        return res
+      })
+
+      .andThen(({ message, dataChannelId }) =>
+        getClients(message.connectionId)
+          .map((ids) => ids.filter((id) => id !== dataChannelId))
+          .map(
+            (clientIds) =>
+              combine(
+                clientIds.map((id) => publish(id, JSON.stringify(message)))
+              )
+            // .mapErr((errors) => errors.map(handlePublishError(message)))
+          )
+          .map(() => sendMessage({ valid: message }))
+      )
   }
 
   return { handleIncomingMessage }
