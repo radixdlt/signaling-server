@@ -46,8 +46,8 @@ const server = async () => {
   const wws = uWs
     .App()
     .ws('/*', {
-      maxPayloadLength: 512,
-      compression: DEDICATED_COMPRESSOR_3KB,
+      // maxPayloadLength: 512,
+      // compression: DEDICATED_COMPRESSOR_3KB,
       open: () => {},
       message: async (ws, message) => {
         incomingMessageCounter.inc()
