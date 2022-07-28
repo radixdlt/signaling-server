@@ -6,17 +6,77 @@ import { websocketServer } from './websocket/websocket-server'
 import { redisClient } from './data'
 import {
   connectedClientsGauge,
-  incomingMessageCounter,
   prometheusClient,
+  queueSizeGauge,
 } from './metrics/metrics'
 import './http/http-server'
 import { DataChannelRepo } from './data/data-channel-repo'
-import { createWorker, messageQueue } from './data/message-queue'
 import { randomUUID } from 'node:crypto'
 import { wsRepo } from './data/websocket-repo'
+import { ResultAsync } from 'neverthrow'
+import { WebSocket } from 'ws'
+import {
+  bufferTime,
+  catchError,
+  concatMap,
+  filter,
+  forkJoin,
+  Subject,
+  tap,
+} from 'rxjs'
+import { config } from './config'
 
 const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
 collectDefaultMetrics()
+
+type QueueItem = { ws: WebSocket; data: string }
+
+const SimpleQueue = (
+  handleIncomingMessage: (
+    ws: WebSocket,
+    rawMessage: string
+  ) => ResultAsync<void, Error>
+) => {
+  const messageSubject = new Subject<QueueItem>()
+  let count = 0
+
+  messageSubject
+    .pipe(
+      bufferTime(1000, null, config.queue.concurrency),
+      filter((items) => items.length > 0),
+      concatMap((items) => {
+        return forkJoin(
+          items.map((item) => {
+            return handleIncomingMessage(item.ws, item.data)
+              .map(() => {
+                --count
+              })
+              .mapErr((error) => {
+                --count
+                if (error.message === 'write EPIPE') return
+                log.error(error)
+              })
+          })
+        )
+      }),
+      tap(() => {
+        queueSizeGauge.set(count)
+        log.trace(`messages in queue: ${count}`)
+      }),
+      catchError((error) => {
+        log.error(error)
+        return []
+      })
+    )
+    .subscribe()
+
+  const add = (item: QueueItem) => {
+    ++count
+    messageSubject.next(item)
+  }
+
+  return { add }
+}
 
 const server = async () => {
   const redis = await redisClient()
@@ -31,7 +91,8 @@ const server = async () => {
     redis.publish
   )
 
-  const worker = createWorker(wsRepo, handleIncomingMessage)
+  // const worker = createWorker(wsRepo, handleIncomingMessage)
+  const queue = SimpleQueue(handleIncomingMessage)
 
   wss.on('connection', (ws) => {
     log.debug({ event: `ClientConnected`, clients: wss.clients.size })
@@ -45,16 +106,17 @@ const server = async () => {
       ws.isAlive = true
     })
 
-    ws.onmessage = async (event) => {
-      incomingMessageCounter.inc()
-      await messageQueue.add(
-        randomUUID(),
-        {
-          id: ws.id,
-          data: event.data.toString(),
-        },
-        { removeOnComplete: true, removeOnFail: true }
-      )
+    ws.onmessage = (event) => {
+      return queue.add({ ws, data: event.data.toString() })
+      // incomingMessageCounter.inc()
+      // await messageQueue.add(
+      //   randomUUID(),
+      //   {
+      //     id: ws.id,
+      //     data: event.data.toString(),
+      //   },
+      //   { removeOnComplete: true, removeOnFail: true }
+      // )
       // try {
       //   incomingMessageCounter.inc()
       //   const result = await handleIncomingMessage(ws, event.data.toString())

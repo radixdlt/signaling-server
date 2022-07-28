@@ -38,6 +38,7 @@ setInterval(async () => {
 setInterval(async () => {
   try {
     const jobs = await messageQueue.getJobCounts()
+    log.info(jobs)
     queueSizeGauge.set(jobs.waiting + jobs.active)
     queueActiveJobsGauge.set(jobs.active)
   } catch (error) {}
