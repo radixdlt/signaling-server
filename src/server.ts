@@ -6,6 +6,7 @@ import { websocketServer } from './websocket/websocket-server'
 import { redisClient } from './data'
 import {
   connectedClientsGauge,
+  incomingMessageCounter,
   prometheusClient,
   queueSizeGauge,
 } from './metrics/metrics'
@@ -107,6 +108,7 @@ const server = async () => {
     })
 
     ws.onmessage = (event) => {
+      incomingMessageCounter.inc()
       return queue.add({ ws, data: event.data.toString() })
       // incomingMessageCounter.inc()
       // await messageQueue.add(
