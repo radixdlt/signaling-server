@@ -43,6 +43,7 @@
     "prom-client": "^14.0.1",
     "prometheus-gc-stats": "^0.6.3",
     "rxjs": "^7.5.5",
+    "uWebSockets.js": "uNetworking/uWebSockets.js#v20.10.0",
     "uuid": "^8.3.2",
     "ws": "^8.8.0",
     "zod": "^3.17.3"

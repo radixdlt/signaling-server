@@ -4,10 +4,10 @@ import { handleMessageError, MessageError } from '../utils/error'
 import { validateMessage } from './validate'
 import { DataChannelMessage, MessageTypesObjects } from './_types'
 import { log } from '../utils/log'
-import { WebSocket } from 'ws'
 import { outgoingMessageCounter } from '../metrics/metrics'
 import { DataChannelRepoType } from '../data/data-channel-repo'
 import { sendAsync } from '../websocket/send-async'
+import { WebSocket } from 'uWebSockets.js'
 
 type ValidResponse = { valid: MessageTypesObjects }
 export type Response =

@@ -1,4 +1,4 @@
-import { WebSocket } from 'ws'
+import { WebSocket } from 'uWebSockets.js'
 import { v4 } from 'uuid'
 import { CreateDataChannel } from './redis'
 import { okAsync, ResultAsync } from 'neverthrow'
