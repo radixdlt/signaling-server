@@ -13,7 +13,7 @@ type ValidResponse = { valid: MessageTypesObjects }
 export type Response =
   | ValidResponse
   | MessageTypesObjects
-  | { errorMessage?: string; name: string }
+  | { errorMessage?: string; name: string; error?: Error }
 
 export const messageFns = (
   dataChannelRepo: DataChannelRepoType,
@@ -83,8 +83,12 @@ export const messageFns = (
       )
       .andThen(validateMessage)
       .mapErr((err) => {
-        sendMessage({ errorMessage: err.errorMessage, name: err.name })
-        return err.error
+        sendMessage({
+          errorMessage: err.errorMessage,
+          name: err.name,
+          error: err.error,
+        })
+        return
       })
       .asyncAndThen((message) => {
         log.trace({ event: 'IncomingMessage', message })

@@ -13,6 +13,25 @@ import uWs from 'uWebSockets.js'
 const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
 collectDefaultMetrics()
 
+// const RateLimit = (limit: number, interval: number) => {
+//   let now = 0
+//   const last = Symbol(),
+//     count = Symbol()
+//   setInterval(() => ++now, interval)
+//   return (ws: uWs.WebSocket) => {
+//     // @ts-ignore
+//     if (ws[last] != now) {
+//       // @ts-ignore
+//       ws[last] = now
+//       // @ts-ignore
+//       ws[count] = 1
+//     } else {
+//       // @ts-ignore
+//       return ++ws[count] > limit
+//     }
+//   }
+// }
+
 const server = async () => {
   const redis = await redisClient()
 
@@ -26,12 +45,23 @@ const server = async () => {
     redis.publish
   )
 
-  const wss = uWs
+  const wws = uWs
     .App()
     .ws('/*', {
-      open: (ws) => {},
+      open: (ws) => {
+        log.info('ws open')
+      },
       message: async (ws, message, isBinary) => {
         incomingMessageCounter.inc()
+        // if (RateLimit(1, 1000)) {
+        //   const dataToSendToClient = {
+        //     action: 'info',
+        //     data: 'over limit! please slow down.',
+        //   }
+        //   console.log('hitting rate limit')
+        //   await ws.send(JSON.stringify(dataToSendToClient))
+        //   return ws.end()
+        // }
         try {
           const result = await handleIncomingMessage(
             ws,
@@ -39,7 +69,7 @@ const server = async () => {
           )
           if (result.isErr()) {
             const error = result.error
-            if (error.message === 'write EPIPE') return
+            if (!error || (error && error.message === 'write EPIPE')) return
             log.error(error)
           }
         } catch (error: any) {
