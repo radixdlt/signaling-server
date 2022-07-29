@@ -49,8 +49,18 @@ const server = async () => {
       // maxPayloadLength: 512,
       // compression: DEDICATED_COMPRESSOR_3KB,
       open: () => {},
-      message: (ws, message) => {
-        ws.send(message)
+      message: async (ws, arrayBuffer) => {
+        const rawMessage = Buffer.from(arrayBuffer).toString('utf8')
+        const message = JSON.parse(rawMessage)
+        const dataChannelId = dataChannelRepo.getId(ws)
+
+        if (!dataChannelId) {
+          await dataChannelRepo.add(ws, ws.send)
+        }
+
+        ws.send(JSON.stringify({ valid: message }))
+
+        // ws.send(message)
         // return message
         // incomingMessageCounter.inc()
         // if (rateLimit(ws)) {
