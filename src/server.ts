@@ -107,12 +107,21 @@ const server = async () => {
           if (targetClientWebsocket) {
             targetClientWebsocket.send(rawMessage)
           } else {
+            const t0Redis = performance.now()
             const targetClientId = await redis.publisher.get(
               `${ws.connectionId}:${parsed.source}`
+            )
+            const t1Redis = performance.now()
+            console.log(
+              'Redis get took ' + (t1Redis - t0Redis) + ' milliseconds.'
             )
             if (targetClientId) {
               ws.targetClientId = targetClientId
               await redis.publisher.publish(targetClientId, rawMessage)
+              const t2Redis = performance.now()
+              console.log(
+                'Redis publish took ' + (t2Redis - t1Redis) + ' milliseconds.'
+              )
             }
           }
           const t3 = performance.now()
