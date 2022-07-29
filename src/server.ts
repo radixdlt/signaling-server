@@ -100,6 +100,10 @@ const server = async () => {
           const parsed = JSON.parse(rawMessage)
           const targetClientWebsocket = wsRepo.get(ws.targetClientId)
 
+          const t1 = performance.now()
+          console.log('Block 1 took ' + (t1 - t0) + ' milliseconds.')
+
+          const t2 = performance.now()
           if (targetClientWebsocket) {
             targetClientWebsocket.send(rawMessage)
           } else {
@@ -111,15 +115,7 @@ const server = async () => {
               await redis.publisher.publish(targetClientId, rawMessage)
             }
           }
-
-          const t1 = performance.now()
-
-          console.log('Block 1 took ' + (t1 - t0) + ' milliseconds.')
-
-          const t2 = performance.now()
-
           const t3 = performance.now()
-
           console.log('Block 2 took ' + (t3 - t2) + ' milliseconds.')
 
           const t4 = performance.now()
@@ -174,6 +170,7 @@ const server = async () => {
         --connections
         connectedClientsGauge.set(connections)
         await redis.subscriber.unsubscribe(ws.id)
+        wsRepo.delete(ws.id)
         // log.trace({
         //   event: 'ClientDisconnected',
         //   clients: wss.clients.size,
