@@ -1,3 +1,3 @@
-import { WebSocket } from 'ws'
+import uWs from 'uWebSockets.js'
 
-export const wsRepo = new Map<string, WebSocket>()
+export const wsRepo = new Map<string, uWs.WebSocket>()

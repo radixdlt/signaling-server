@@ -12,7 +12,7 @@ import './http/http-server'
 import { DataChannelRepo } from './data/data-channel-repo'
 import { wsRepo } from './data/websocket-repo'
 import { config } from './config'
-import uWs, { DEDICATED_COMPRESSOR_3KB } from 'uWebSockets.js'
+import uWs from 'uWebSockets.js'
 import { randomUUID } from 'node:crypto'
 
 const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
@@ -89,6 +89,7 @@ const server = async () => {
 
         await redis.subscriber.subscribe(id, (message) => ws.send(message))
         await redis.publisher.set(`${connectionId}:${target}`, id)
+        wsRepo.set(id, ws)
       },
       message: async (ws, arrayBuffer) => {
         try {
@@ -97,17 +98,26 @@ const server = async () => {
           const t0 = performance.now()
           const rawMessage = Buffer.from(arrayBuffer).toString('utf8')
           const parsed = JSON.parse(rawMessage)
-          const clientId = await redis.publisher.get(
-            `${ws.connectionId}:${parsed.source}`
-          )
+          const targetClientWebsocket = wsRepo.get(ws.targetClientId)
+
+          if (targetClientWebsocket) {
+            targetClientWebsocket.send(rawMessage)
+          } else {
+            const targetClientId = await redis.publisher.get(
+              `${ws.connectionId}:${parsed.source}`
+            )
+            if (targetClientId) {
+              ws.targetClientId = targetClientId
+              await redis.publisher.publish(targetClientId, rawMessage)
+            }
+          }
+
           const t1 = performance.now()
 
           console.log('Block 1 took ' + (t1 - t0) + ' milliseconds.')
 
           const t2 = performance.now()
-          if (clientId) {
-            await redis.publisher.publish(clientId, rawMessage)
-          }
+
           const t3 = performance.now()
 
           console.log('Block 2 took ' + (t3 - t2) + ' milliseconds.')
