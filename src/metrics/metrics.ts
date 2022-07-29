@@ -26,14 +26,14 @@ export const subscribeMessageCounter = new client.Counter({
   help: 'Number of subscribed messages',
 })
 
-export const queueSizeGauge = new client.Gauge({
-  name: 'signaling_server_queue_size',
-  help: 'The size of the message queue',
+export const redisGetKeyTime = new client.Gauge({
+  name: 'signaling_server_redis_get_time',
+  help: 'The time it takes in milliseconds for redis to get value',
 })
 
-export const queueActiveJobsGauge = new client.Gauge({
-  name: 'signaling_server_queue_active_jobs',
-  help: 'The number of active jobs the message queue',
+export const redisPublishTime = new client.Gauge({
+  name: 'signaling_server_redis_publish_time',
+  help: 'The time it takes for redis to publish to data channel',
 })
 
 gcStats(client.register, {

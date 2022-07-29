@@ -122,8 +122,6 @@ export const redisClient = async () => {
     throw connection.error
   }
 
-  await publisher.flushAll()
-
   return {
     createDataChannel,
     publish,

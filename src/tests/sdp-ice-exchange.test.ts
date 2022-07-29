@@ -2,6 +2,7 @@ import { combineLatest, delay, merge, ReplaySubject, Subject, tap } from 'rxjs'
 import { MessageTypesObjects } from '../messages/_types'
 import { expect } from 'chai'
 import { randomUUID } from 'node:crypto'
+import { WebSocket } from 'ws'
 
 /**
  * ==============================

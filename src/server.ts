@@ -8,6 +8,8 @@ import {
   incomingMessageCounter,
   outgoingMessageCounter,
   prometheusClient,
+  redisGetKeyTime,
+  redisPublishTime,
 } from './metrics/metrics'
 import './http/http-server'
 import { wsRepo } from './data/websocket-repo'
@@ -82,22 +84,17 @@ const server = async () => {
         try {
           incomingMessageCounter.inc()
 
-          const t0 = performance.now()
           const rawMessage = Buffer.from(arrayBuffer).toString('utf8')
           const parsed = JSON.parse(rawMessage)
 
           const validateResult = await validateMessage(parsed)
+
           if (validateResult.isErr()) {
             outgoingMessageCounter.inc()
             return ws.send(JSON.stringify(validateResult.error))
           }
 
           const targetClientWebsocket = wsRepo.get(ws.targetClientId)
-
-          const t1 = performance.now()
-          console.log('Block 1 took ' + (t1 - t0) + ' milliseconds.')
-
-          const t2 = performance.now()
 
           if (targetClientWebsocket) {
             outgoingMessageCounter.inc()
@@ -108,24 +105,19 @@ const server = async () => {
               `${ws.connectionId}:${parsed.source}`
             )
             const t1Redis = performance.now()
-            console.log(
-              'Redis get took ' + (t1Redis - t0Redis) + ' milliseconds.'
-            )
+            redisGetKeyTime.set(t1Redis - t0Redis)
+
             if (targetClientId) {
               ws.targetClientId = targetClientId
-              await redis.publisher.publish(targetClientId, rawMessage)
               const t2Redis = performance.now()
-              console.log(
-                'Redis publish took ' + (t2Redis - t1Redis) + ' milliseconds.'
-              )
+              await redis.publisher.publish(targetClientId, rawMessage)
+              const t3Redis = performance.now()
+              redisPublishTime.set(t3Redis - t2Redis)
             }
           }
 
           outgoingMessageCounter.inc()
           ws.send(JSON.stringify({ valid: rawMessage }))
-          const t3 = performance.now()
-          console.log('Block 2 took ' + (t3 - t2) + ' milliseconds.')
-          console.log('Total time ' + (t3 - t0) + ' milliseconds.')
         } catch (error) {
           log.error(error)
         }
@@ -146,9 +138,9 @@ const server = async () => {
     })
     .listen(config.port, (token) => {
       if (token) {
-        console.log('Listening to port ' + config.port)
+        log.info('Listening to port ' + config.port)
       } else {
-        console.log('Failed to listen to port ' + config.port)
+        log.info('Failed to listen to port ' + config.port)
       }
     })
 }
