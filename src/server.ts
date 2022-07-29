@@ -81,17 +81,30 @@ const server = async () => {
       },
       message: async (ws, arrayBuffer) => {
         try {
-          incomingMessageCounter.inc()
+          // incomingMessageCounter.inc()
+
+          const t0 = performance.now()
           const rawMessage = Buffer.from(arrayBuffer).toString('utf8')
           const clients = await redis.publisher.sMembers(ws._connectionId)
+          const t1 = performance.now()
 
+          console.log('Block 1 took ' + (t1 - t0) + ' milliseconds.')
+
+          const t2 = performance.now()
           await Promise.all(
             clients
               .filter((id) => id !== ws._id)
               .map((clientId) => redis.publisher.publish(clientId, rawMessage))
           )
+          const t3 = performance.now()
 
+          console.log('Block 2 took ' + (t3 - t2) + ' milliseconds.')
+
+          const t4 = performance.now()
           ws.send(JSON.stringify({ valid: rawMessage }))
+          const t5 = performance.now()
+          console.log('Block 3 took ' + (t5 - t4) + ' milliseconds.')
+          // const t3 = performance.now()
         } catch (error) {
           log.error(error)
         }
