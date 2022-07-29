@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 dotenv.config()
 import { log } from './utils/log'
-import { messageFns } from './messages'
+import { validateMessage } from './messages'
 import { redisClient } from './data'
 import {
   connectedClientsGauge,
@@ -40,32 +40,20 @@ let connections = 0
 const server = async () => {
   const redis = await redisClient()
 
-  const dataChannelRepo = DataChannelRepo(redis.createDataChannel)
-  // const { wss } = websocketServer(dataChannelRepo, wsRepo)
-
-  const { handleIncomingMessage } = messageFns(
-    dataChannelRepo,
-    redis.getClients,
-    redis.addClient,
-    redis.publish
-  )
-
-  const wws = uWs
+  uWs
     .App()
     .ws('/*', {
-      // maxPayloadLength: 512,
-      // compression: DEDICATED_COMPRESSOR_3KB,
       upgrade: (res, req, context) => {
         res.upgrade(
           {
             ip: res.getRemoteAddressAsText(),
 
             url: new URL(`https://x.cc${req.getUrl()}?${req.getQuery()}`),
-          }, // 1st argument sets which properties to pass to ws object, in this case ip address
+          },
           req.getHeader('sec-websocket-key'),
           req.getHeader('sec-websocket-protocol'),
-          req.getHeader('sec-websocket-extensions'), // 3 headers are used to setup websocket
-          context // also used to setup websocket
+          req.getHeader('sec-websocket-extensions'),
+          context
         )
       },
       open: async (ws) => {
@@ -93,17 +81,19 @@ const server = async () => {
       },
       message: async (ws, arrayBuffer) => {
         try {
-          // incomingMessageCounter.inc()
+          incomingMessageCounter.inc()
 
           const t0 = performance.now()
           const rawMessage = Buffer.from(arrayBuffer).toString('utf8')
           const parsed = JSON.parse(rawMessage)
           const targetClientWebsocket = wsRepo.get(ws.targetClientId)
-
+          const validateResult = await validateMessage(parsed)
+          if (validateResult.isErr()) {
+            return ws.send(JSON.stringify(validateResult.error))
+          }
           const t1 = performance.now()
           console.log('Block 1 took ' + (t1 - t0) + ' milliseconds.')
 
-          const t2 = performance.now()
           if (targetClientWebsocket) {
             targetClientWebsocket.send(rawMessage)
           } else {
@@ -124,68 +114,32 @@ const server = async () => {
               )
             }
           }
+
+          const t2 = performance.now()
+          ws.send(JSON.stringify({ valid: rawMessage }))
           const t3 = performance.now()
           console.log('Block 2 took ' + (t3 - t2) + ' milliseconds.')
 
           const t4 = performance.now()
-          ws.send(JSON.stringify({ valid: rawMessage }))
           const t5 = performance.now()
           console.log('Block 3 took ' + (t5 - t4) + ' milliseconds.')
           console.log('Total time ' + (t5 - t0) + ' milliseconds.')
         } catch (error) {
           log.error(error)
         }
-
-        // redis.publisher()
-        // const dataChannelId = dataChannelRepo.getId(ws)
-
-        // if (!dataChannelId) {
-        //   await dataChannelRepo.add(ws, ws.send)
-        // }
-
-        // ws.send(message)
-        // return message
-        // incomingMessageCounter.inc()
-        // if (rateLimit(ws)) {
-        //   ws.send(
-        //     JSON.stringify({
-        //       action: 'info',
-        //       data: 'over limit! please slow down.',
-        //     })
-        //   )
-        //   return ws.end(1008, 'Too Many Requests')
-        // }
-        // try {
-        //   handleIncomingMessage(
-        //     ws,
-        //     Buffer.from(message).toString('utf8')
-        //   ).mapErr((error) => {
-        //     if (!error || (error && error.message === 'write EPIPE')) return
-        //     log.error(error)
-        //   })
-        // } catch (error: any) {
-        //   if (
-        //     error.message ===
-        //     'Invalid access of closed uWS.WebSocket/SSLWebSocket.'
-        //   )
-        //     return
-        //   log.error(error)
-        // }
       },
       drain: (ws) => {
-        console.log('WebSocket backpressure: ' + ws.getBufferedAmount())
+        log.trace('WebSocket backpressure: ' + ws.getBufferedAmount())
       },
-      close: async (ws, code, message) => {
+      close: async (ws) => {
         --connections
         connectedClientsGauge.set(connections)
         await redis.subscriber.unsubscribe(ws.id)
         wsRepo.delete(ws.id)
-        // log.trace({
-        //   event: 'ClientDisconnected',
-        //   clients: wss.clients.size,
-        // })
-        // dataChannelRepo.remove(ws)
-        // wsRepo.delete(ws.id)
+        log.trace({
+          event: 'ClientDisconnected',
+          clients: connections,
+        })
       },
     })
     .listen(config.port, (token) => {
@@ -195,61 +149,6 @@ const server = async () => {
         console.log('Failed to listen to port ' + config.port)
       }
     })
-
-  // wss.on('connection', (ws) => {
-  //   log.debug({ event: `ClientConnected`, clients: wss.clients.size })
-  //   connectedClientsGauge.set(wss.clients.size)
-
-  //   ws.isAlive = true
-  //   ws.id = randomUUID()
-  //   wsRepo.set(ws.id, ws)
-
-  //   ws.on('pong', () => {
-  //     ws.isAlive = true
-  //   })
-
-  //   ws.onmessage = async (event) => {
-  //     // queue.add({ ws, data: event.data.toString() })
-  //     // incomingMessageCounter.inc()
-  //     // incomingMessageCounter.inc()
-  //     // await messageQueue.add(
-  //     //   randomUUID(),
-  //     //   {
-  //     //     id: ws.id,
-  //     //     data: event.data.toString(),
-  //     //   },
-  //     //   { removeOnComplete: true, removeOnFail: true }
-  //     // )
-  //     incomingMessageCounter.inc()
-  //     if (!wsRepo.has(ws.id)) {
-  //       return
-  //     }
-  //     try {
-  //       const result = await handleIncomingMessage(ws, event.data.toString())
-  //       if (result.isErr()) {
-  //         const error = result.error
-  //         if (error.message === 'write EPIPE') return
-  //         log.error(error)
-  //       }
-  //     } catch (error) {
-  //       console.error(error)
-  //     }
-  //   }
-
-  //   ws.onerror = (event) => {
-  //     log.error(event.error)
-  //   }
-
-  //   ws.onclose = async () => {
-  //     connectedClientsGauge.set(wss.clients.size)
-  //     log.trace({
-  //       event: 'ClientDisconnected',
-  //       clients: wss.clients.size,
-  //     })
-  //     await dataChannelRepo.remove(ws)
-  //     wsRepo.delete(ws.id)
-  //   }
-  // })
 }
 
 const runServer = async () => {

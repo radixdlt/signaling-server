@@ -1,7 +1,7 @@
 import { log } from '../utils/log'
 import { createClient } from '@redis/client'
 import { config } from '../config'
-import { combine, ResultAsync } from 'neverthrow'
+import { ResultAsync } from 'neverthrow'
 import { publishMessageCounter } from '../metrics/metrics'
 
 type RedisClientConfig = Parameters<typeof createClient>[0]
@@ -108,7 +108,7 @@ export const redisClient = async () => {
   }
 
   const connect = async () =>
-    combine([
+    ResultAsync.combine([
       connectClient('publisher', publisher),
       connectClient('subscriber', subscriber),
     ])
