@@ -122,29 +122,9 @@ export const redisClient = async () => {
     throw connection.error
   }
 
-  const addClient = async (connectionId: string, clientId: string) => {
-    log.trace({ event: 'AddClient', connectionId, clientId })
-    await publisher.sAdd(connectionId, clientId)
-    await publisher.expireAt(connectionId, Date.now() + 3600 * 1000)
-  }
-
-  const getClients = async (connectionId: string) => {
-    const clients = await publisher.sMembers(connectionId)
-    log.trace({ event: 'getClients', connectionId, clients })
-    return clients
-  }
+  await publisher.flushAll()
 
   return {
-    addClient: (connectionId: string, clientId: string) =>
-      ResultAsync.fromPromise<void, Error>(
-        addClient(connectionId, clientId),
-        (error) => error as Error
-      ),
-    getClients: (connectionId: string) =>
-      ResultAsync.fromPromise<string[], Error>(
-        getClients(connectionId),
-        (error) => error as Error
-      ),
     createDataChannel,
     publish,
     publisher,

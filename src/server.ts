@@ -6,10 +6,10 @@ import { redisClient } from './data'
 import {
   connectedClientsGauge,
   incomingMessageCounter,
+  outgoingMessageCounter,
   prometheusClient,
 } from './metrics/metrics'
 import './http/http-server'
-import { DataChannelRepo } from './data/data-channel-repo'
 import { wsRepo } from './data/websocket-repo'
 import { config } from './config'
 import uWs from 'uWebSockets.js'
@@ -47,7 +47,6 @@ const server = async () => {
         res.upgrade(
           {
             ip: res.getRemoteAddressAsText(),
-
             url: new URL(`https://x.cc${req.getUrl()}?${req.getQuery()}`),
           },
           req.getHeader('sec-websocket-key'),
@@ -86,15 +85,22 @@ const server = async () => {
           const t0 = performance.now()
           const rawMessage = Buffer.from(arrayBuffer).toString('utf8')
           const parsed = JSON.parse(rawMessage)
-          const targetClientWebsocket = wsRepo.get(ws.targetClientId)
+
           const validateResult = await validateMessage(parsed)
           if (validateResult.isErr()) {
+            outgoingMessageCounter.inc()
             return ws.send(JSON.stringify(validateResult.error))
           }
+
+          const targetClientWebsocket = wsRepo.get(ws.targetClientId)
+
           const t1 = performance.now()
           console.log('Block 1 took ' + (t1 - t0) + ' milliseconds.')
 
+          const t2 = performance.now()
+
           if (targetClientWebsocket) {
+            outgoingMessageCounter.inc()
             targetClientWebsocket.send(rawMessage)
           } else {
             const t0Redis = performance.now()
@@ -115,15 +121,11 @@ const server = async () => {
             }
           }
 
-          const t2 = performance.now()
+          outgoingMessageCounter.inc()
           ws.send(JSON.stringify({ valid: rawMessage }))
           const t3 = performance.now()
           console.log('Block 2 took ' + (t3 - t2) + ' milliseconds.')
-
-          const t4 = performance.now()
-          const t5 = performance.now()
-          console.log('Block 3 took ' + (t5 - t4) + ' milliseconds.')
-          console.log('Total time ' + (t5 - t0) + ' milliseconds.')
+          console.log('Total time ' + (t3 - t0) + ' milliseconds.')
         } catch (error) {
           log.error(error)
         }
