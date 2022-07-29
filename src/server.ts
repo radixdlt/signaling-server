@@ -35,7 +35,7 @@ const RateLimit = (limit: number, interval: number) => {
   }
 }
 
-// const rateLimit = RateLimit(config.rateLimit.messages, config.rateLimit.time)
+const rateLimit = RateLimit(config.rateLimit.messages, config.rateLimit.time)
 
 let connections = 0
 
@@ -82,6 +82,9 @@ const server = async () => {
       },
       message: async (ws, arrayBuffer) => {
         try {
+          if (rateLimit(ws)) {
+            return ws.end(1013, 'rate limit hit, slow down')
+          }
           incomingMessageCounter.inc()
 
           const rawMessage = Buffer.from(arrayBuffer).toString('utf8')
@@ -117,7 +120,7 @@ const server = async () => {
           }
 
           outgoingMessageCounter.inc()
-          ws.send(JSON.stringify({ valid: rawMessage }))
+          ws.send(JSON.stringify({ valid: parsed }))
         } catch (error) {
           log.error(error)
         }

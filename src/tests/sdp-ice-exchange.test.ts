@@ -16,13 +16,6 @@ import { WebSocket } from 'ws'
 const connectionId =
   'de0ced0cc6514ae8f79a571983911de623e87f8d84e4da561701916708702f49'
 
-const SUBSCRIBE: MessageTypesObjects = {
-  method: 'subscribe',
-  source: 'extension',
-  connectionId,
-  requestId: randomUUID(),
-}
-
 const OFFER: MessageTypesObjects = {
   encryptedPayload:
     '8ab7f0f7f46444b3ce4ad64bfaa080b7607ef4435c6c6d20b50f71304a191dece0d77d44be25541b0fb96a8d14c86595f209d2c3e40a43595ea447a9c8fa403fc4dbdf44a7845f625ce6183b542952caa10cab231424080bdcef45228e0d4643541aeb392472a328d263a622d0e30bd309799e9dd11a7795fefed9e864cfae2fc2dfc3acb6835ba4ffbf2a8907d12dd9bb31920744d173084993cfde0116c3b2e273766157618294d5657540030c357a7e87287b1a0e3d4ecf12847465f82bc7740a385da984143c45218cc83dd3c1bebe6abcdfe126edb69a73fc0a917ebeb946cebfbb87172759f8a5e08de4264433add8990292e8f4688ed31a156f89c332c52b2e495736754bd77d4526291559d933dce4dacbee60dd31bec59de3eaee280e73695cf2e1b4d3aa1f9670691b4793b49f983b483391e2c937b961862cdfbcfb2218fb4b167b767d084e44baac4e4a2d87bf4ceaa04cd4e40d3b77e717ae207f6033fdd488e6cd50f251ce2b8cd6eee15645c4fe22f3acc1a96b79bee64ff8d67bc18eb6a47b8694642fc3e82cf10cd366eac433c5d4d7d6e4405e76ea30d1ffc297420929927e033eedbd1fff81445d12aa0c877018b3737a22bbc0efa3f175819e1a63f0073e5a96bb5f5c986bab05d65b84abebd8ccd4f5081f9d846bf20982d434774b68ae014326b1e174801ebc1daa173708ac9898b47936c7eea5b9874e9ec9e757727ac80fb596e806cac2f36bc042a2c8c5b4726f4552915d76be4e',
@@ -82,14 +75,14 @@ const createMessage = (
         encryptedPayload: 'abc',
       }
 
-    case 'subscribe':
-      return {
-        ...SUBSCRIBE,
-        source,
-        requestId: randomUUID(),
-        connectionId: '111',
-        encryptedPayload: 'abc',
-      }
+    // case 'subscribe':
+    //   return {
+    //     ...SUBSCRIBE,
+    //     source,
+    //     requestId: randomUUID(),
+    //     connectionId: '111',
+    //     encryptedPayload: 'abc',
+    //   }
 
     default:
       throw new Error('invalid method')
@@ -129,8 +122,12 @@ const getNextMessage = (
 
 describe('webRTC SDP exchange', () => {
   it('should simulate an exchange of SDP and ICE between two clients', (done) => {
-    const client1 = createClient('ws://localhost:4000')
-    const client2 = createClient('ws://localhost:4100')
+    const client1 = createClient(
+      `ws://localhost:4000/${connectionId}?target=iOS`
+    )
+    const client2 = createClient(
+      `ws://localhost:4100/${connectionId}?target=extension`
+    )
 
     const clients = { client1, client2 }
 
@@ -138,10 +135,6 @@ describe('webRTC SDP exchange', () => {
       client: 'client1' | 'client2'
       message: MessageTypesObjects
     }[] = [
-      {
-        client: 'client1',
-        message: createMessage('subscribe', 'extension'),
-      },
       {
         client: 'client2',
         message: createMessage('offer', 'iOS'),
@@ -192,25 +185,19 @@ describe('webRTC SDP exchange', () => {
       (item) => item.client === 'client2'
     )
 
-    const expectedClient1Messages = [
-      {
-        valid: client1Messages[0].message,
-      },
+    const expectedClient1Messages: any[] = [
       client2Messages[0].message,
       client2Messages[1].message,
       client2Messages[2].message,
       client2Messages[3].message,
       {
+        valid: client1Messages[0].message,
+      },
+      {
         valid: client1Messages[1].message,
       },
       {
         valid: client1Messages[2].message,
-      },
-      {
-        valid: client1Messages[3].message,
-      },
-      {
-        valid: client1Messages[4].message,
       },
     ]
 
@@ -227,10 +214,10 @@ describe('webRTC SDP exchange', () => {
       {
         valid: client2Messages[3].message,
       },
+
+      client1Messages[0].message,
       client1Messages[1].message,
       client1Messages[2].message,
-      client1Messages[3].message,
-      client1Messages[4].message,
     ]
 
     const actualClient1Messages: Response[] = []
