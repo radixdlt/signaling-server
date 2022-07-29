@@ -147,5 +147,7 @@ export const redisClient = async () => {
       ),
     createDataChannel,
     publish,
+    publisher,
+    subscriber,
   }
 }
