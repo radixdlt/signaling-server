@@ -50,7 +50,8 @@ const server = async () => {
       // compression: DEDICATED_COMPRESSOR_3KB,
       open: () => {},
       message: (ws, message) => {
-        return message
+        ws.send(message)
+        // return message
         // incomingMessageCounter.inc()
         // if (rateLimit(ws)) {
         //   ws.send(
