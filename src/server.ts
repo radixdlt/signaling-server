@@ -50,7 +50,8 @@ const server = async () => {
       // compression: DEDICATED_COMPRESSOR_3KB,
       open: () => {},
       message: (ws, message) => {
-        incomingMessageCounter.inc()
+        return message
+        // incomingMessageCounter.inc()
         // if (rateLimit(ws)) {
         //   ws.send(
         //     JSON.stringify({
@@ -60,22 +61,22 @@ const server = async () => {
         //   )
         //   return ws.end(1008, 'Too Many Requests')
         // }
-        try {
-          handleIncomingMessage(
-            ws,
-            Buffer.from(message).toString('utf8')
-          ).mapErr((error) => {
-            if (!error || (error && error.message === 'write EPIPE')) return
-            log.error(error)
-          })
-        } catch (error: any) {
-          if (
-            error.message ===
-            'Invalid access of closed uWS.WebSocket/SSLWebSocket.'
-          )
-            return
-          log.error(error)
-        }
+        // try {
+        //   handleIncomingMessage(
+        //     ws,
+        //     Buffer.from(message).toString('utf8')
+        //   ).mapErr((error) => {
+        //     if (!error || (error && error.message === 'write EPIPE')) return
+        //     log.error(error)
+        //   })
+        // } catch (error: any) {
+        //   if (
+        //     error.message ===
+        //     'Invalid access of closed uWS.WebSocket/SSLWebSocket.'
+        //   )
+        //     return
+        //   log.error(error)
+        // }
       },
       drain: (ws) => {
         console.log('WebSocket backpressure: ' + ws.getBufferedAmount())
