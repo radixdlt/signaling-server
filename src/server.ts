@@ -84,8 +84,8 @@ const server = async () => {
           return ws.end(1003, 'invalid target')
         }
         const id = randomUUID()
-        ws._id = id
-        ws._connectionId = connectionId
+        ws.id = id
+        ws.connectionId = connectionId
 
         await redis.subscriber.subscribe(id, (message) => ws.send(message))
         await redis.publisher.set(`${connectionId}:${target}`, id)
@@ -163,7 +163,7 @@ const server = async () => {
       close: async (ws, code, message) => {
         --connections
         connectedClientsGauge.set(connections)
-        await redis.subscriber.unsubscribe(ws._id)
+        await redis.subscriber.unsubscribe(ws.id)
         // log.trace({
         //   event: 'ClientDisconnected',
         //   clients: wss.clients.size,
