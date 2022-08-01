@@ -8,8 +8,7 @@ ingress:
           serviceName: signaling-server
           servicePort: 4000
   tls:
-    - secretName: self-signed-tls
-      hosts:
+    - hosts:
         - signaling-server-dev.rdx-works-main.extratools.works
 
 metrics:

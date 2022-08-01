@@ -2,6 +2,8 @@
 
 ingress:
   enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx-load-testing
   hosts:
     - host: {{ $SIG_SRV_NS }}.rdx-works-main.extratools.works
       paths:
@@ -10,8 +12,7 @@ ingress:
           serviceName: signaling-server
           servicePort: 4000
   tls:
-    - secretName: self-signed-tls
-      hosts:
+    - hosts:
         - {{ $SIG_SRV_NS }}.rdx-works-main.extratools.works
 
 metrics:
