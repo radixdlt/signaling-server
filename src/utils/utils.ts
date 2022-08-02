@@ -1,4 +1,6 @@
+import { config } from '../config'
 import { err, ok, Result } from 'neverthrow'
+import uWs from 'uWebSockets.js'
 
 export const bufferToString = (
   buffer: Buffer | ArrayBuffer | Buffer[]
@@ -24,4 +26,10 @@ export const setToArray = <T>(set: Set<T>): Result<T[], Error> => {
   } catch (error) {
     return err(error as Error)
   }
+}
+
+export const checkIfValidSHA256 = (str: string) => {
+  const regexExp = /^[a-f0-9]{64}$/gi
+
+  return regexExp.test(str)
 }
