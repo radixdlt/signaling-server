@@ -8,6 +8,7 @@ import {
   incomingMessageCounter,
   outgoingMessageCounter,
   prometheusClient,
+  redisDeleteTime,
   redisGetKeyTime,
   redisPublishTime,
   redisSetTime,
@@ -59,6 +60,13 @@ const server = async () => {
     await redis.publisher.set(`${connectionId}:${target}`, id)
     const t1 = performance.now()
     redisSetTime.set(t1 - t0)
+  }
+
+  const removeData = async (connectionId: string, target: string) => {
+    const t0 = performance.now()
+    await redis.publisher.del(`${connectionId}:${target}`)
+    const t1 = performance.now()
+    redisDeleteTime.set(t1 - t0)
   }
 
   const subscribe = async (ws: uWs.WebSocket, dataChanel: string) => {
@@ -216,7 +224,11 @@ const server = async () => {
             })
           }
 
-          await redis.subscriber.unsubscribe(ws.id)
+          await Promise.all([
+            redis.subscriber.unsubscribe(ws.id),
+            removeData(ws.connectionId, ws.target),
+          ])
+
           wsRepo.delete(ws.id)
           log.trace({
             event: 'ClientDisconnected',

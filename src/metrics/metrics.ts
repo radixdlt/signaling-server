@@ -36,6 +36,11 @@ export const redisSetTime = new client.Gauge({
   help: 'The time it takes in milliseconds for redis to set value',
 })
 
+export const redisDeleteTime = new client.Gauge({
+  name: 'signaling_server_redis_delete_time',
+  help: 'The time it takes in milliseconds for redis to delete value',
+})
+
 export const redisPublishTime = new client.Gauge({
   name: 'signaling_server_redis_publish_time',
   help: 'The time it takes for redis to publish to data channel',
