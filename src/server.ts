@@ -103,6 +103,8 @@ const server = async () => {
       },
       open: async (ws) => {
         try {
+          ++connections
+          connectedClientsGauge.set(connections)
           const url: URL = ws.url
           const connectionId = url.pathname.slice(1)
           const target = url.searchParams.get('target')
@@ -138,8 +140,6 @@ const server = async () => {
           ])
 
           wsRepo.set(id, ws)
-          ++connections
-          connectedClientsGauge.set(connections)
         } catch (error) {
           log.error(error)
           ws.end(1011, 'could not handle connection, try again')
@@ -205,9 +205,9 @@ const server = async () => {
         log.trace('WebSocket backpressure: ' + ws.getBufferedAmount())
       },
       close: async (ws) => {
+        --connections
+        connectedClientsGauge.set(connections)
         try {
-          --connections
-          connectedClientsGauge.set(connections)
           const targetClientId = await getTargetClientId(ws.targetClientIdKey)
           if (targetClientId) {
             await publish(targetClientId, {
