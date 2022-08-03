@@ -75,7 +75,7 @@ const server = async () => {
       parseJSON<Message>(raw).map((message) => {
         outgoingMessageCounter.inc()
         send(ws, {
-          info: 'RemoteData',
+          info: 'remoteData',
           data: message,
           requestId: message.requestId,
         })
@@ -164,7 +164,7 @@ const server = async () => {
 
           if (parsedResult.isErr()) {
             return send(ws, {
-              info: 'InvalidMessageError',
+              info: 'invalidMessageError',
               data: rawMessage,
               error: 'invalid message format, expected JSON',
             })
@@ -176,7 +176,7 @@ const server = async () => {
 
           if (validateResult.isErr()) {
             return send(ws, {
-              info: 'ValidationError',
+              info: 'validationError',
               requestId: parsed?.requestId,
               error: validateResult.error,
             })
@@ -186,7 +186,7 @@ const server = async () => {
 
           if (targetClientWebsocket) {
             send(targetClientWebsocket, {
-              info: 'RemoteData',
+              info: 'remoteData',
               data: parsed,
               requestId: parsed.requestId,
             })
@@ -198,13 +198,13 @@ const server = async () => {
               await publish(targetClientId, rawMessage)
             } else {
               return send(ws, {
-                info: 'MissingRemoteClientError',
+                info: 'missingRemoteClientError',
                 requestId: parsed.requestId,
               })
             }
           }
 
-          send(ws, { info: 'Confirmation', requestId: parsed.requestId })
+          send(ws, { info: 'confirmation', requestId: parsed.requestId })
         } catch (error) {
           log.error(error)
         }
@@ -216,20 +216,22 @@ const server = async () => {
         --connections
         connectedClientsGauge.set(connections)
         try {
-          const targetClientId = await getTargetClientId(ws.targetClientIdKey)
-          if (targetClientId) {
-            await publish(targetClientId, {
-              info: 'RemoteClientDisconnected',
-              target: ws.target,
-            })
+          if (ws.id) {
+            const targetClientId = await getTargetClientId(ws.targetClientIdKey)
+            if (targetClientId) {
+              await publish(targetClientId, {
+                info: 'remoteClientDisconnected',
+                target: ws.target,
+              })
+            }
+            await Promise.all([
+              redis.subscriber.unsubscribe(ws.id),
+              removeData(ws.connectionId, ws.target),
+            ])
+
+            wsRepo.delete(ws.id)
           }
 
-          await Promise.all([
-            redis.subscriber.unsubscribe(ws.id),
-            removeData(ws.connectionId, ws.target),
-          ])
-
-          wsRepo.delete(ws.id)
           log.trace({
             event: 'ClientDisconnected',
             clients: connections,

@@ -2,34 +2,34 @@ import { ZodError } from 'zod'
 import { Message } from './io-types'
 
 export type Confirmation = {
-  info: 'Confirmation'
+  info: 'confirmation'
   requestId: Message['requestId']
 }
 
 export type RemoteData = {
-  info: 'RemoteData'
+  info: 'remoteData'
   requestId: Message['requestId']
   data: Message
 }
 
 export type RemoteClientDisconnected = {
-  info: 'RemoteClientDisconnected'
+  info: 'remoteClientDisconnected'
   target: Message['source']
 }
 
 export type MissingRemoteClientError = {
-  info: 'MissingRemoteClientError'
+  info: 'missingRemoteClientError'
   requestId: Message['requestId']
 }
 
 export type InvalidMessageError = {
-  info: 'InvalidMessageError'
+  info: 'invalidMessageError'
   error: string
   data: string
 }
 
 export type ValidationError = {
-  info: 'ValidationError'
+  info: 'validationError'
   requestId: Message['requestId']
   error: ZodError[]
 }
