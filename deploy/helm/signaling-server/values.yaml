@@ -84,12 +84,12 @@ resources:
 
 autoscaling:
   enabled: true
-  minReplicas: 4
+  minReplicas: 8
   maxReplicas: 10
   targetCPUUtilizationPercentage: 60
 
 nodeSelector:
-  radixdlt.com/tier: "signaling-server"
+  radixdlt.com/tier: 'signaling-server'
 
 tolerations:
   - key: 'signaling-server'
