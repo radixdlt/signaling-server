@@ -76,11 +76,11 @@ ingress:
 javascriptHeap: 13000
 resources:
   limits:
-    cpu: 7000m
-  #    memory: 6Gi
+    cpu: 1200m
+    memory: 6Gi
   requests:
-    cpu: 7000m
-    memory: 14Gi
+    cpu: 1200m
+    memory: 2Gi
 
 autoscaling:
   enabled: true
