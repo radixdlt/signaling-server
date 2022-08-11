@@ -145,14 +145,10 @@ const server = async () => {
           await Promise.all([
             subscribe(ws, id),
             setData(connectionId, target, id),
-          ])
-
-          await publish(
-            ws.targetClientIdKey,
-            JSON.stringify({
+            publish(ws.targetClientIdKey, {
               info: 'remoteClientConnected',
-            })
-          )
+            }),
+          ])
 
           wsRepo.set(id, ws)
         } catch (error) {
@@ -228,7 +224,6 @@ const server = async () => {
             if (targetClientId) {
               await publish(targetClientId, {
                 info: 'remoteClientDisconnected',
-                target: ws.target,
               })
             }
             await Promise.all([

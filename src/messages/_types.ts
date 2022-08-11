@@ -14,7 +14,10 @@ export type RemoteData = {
 
 export type RemoteClientDisconnected = {
   info: 'remoteClientDisconnected'
-  target: Message['source']
+}
+
+export type RemoteClientConnected = {
+  info: 'remoteClientConnected'
 }
 
 export type MissingRemoteClientError = {
@@ -38,6 +41,7 @@ export type MessageTypes =
   | Confirmation
   | RemoteData
   | RemoteClientDisconnected
+  | RemoteClientConnected
   | MissingRemoteClientError
   | InvalidMessageError
   | ValidationError
