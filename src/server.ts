@@ -90,6 +90,11 @@ const server = async () => {
       ws.send(JSON.stringify(message))
       outgoingMessageCounter.inc()
     } catch (error) {
+      if (
+        (error as Error).message ===
+        'Invalid access of closed uWS.WebSocket/SSLWebSocket.'
+      )
+        return
       log.error(error)
     }
   }
