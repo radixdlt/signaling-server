@@ -57,7 +57,7 @@ const server = async () => {
 
   const setData = async (connectionId: string, target: string, id: string) => {
     const t0 = performance.now()
-    await redis.publisher.set(`${connectionId}:${target}`, id)
+    await redis.publisher.set(`${connectionId}:${target}`, id, { EX: 3600 })
     const t1 = performance.now()
     redisSetTime.set(t1 - t0)
   }
@@ -146,6 +146,13 @@ const server = async () => {
             subscribe(ws, id),
             setData(connectionId, target, id),
           ])
+
+          await publish(
+            ws.targetClientIdKey,
+            JSON.stringify({
+              info: 'remoteClientConnected',
+            })
+          )
 
           wsRepo.set(id, ws)
         } catch (error) {
