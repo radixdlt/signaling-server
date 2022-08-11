@@ -154,8 +154,7 @@ const server = async () => {
           ])
 
           if (targetClientId) {
-            ws.targetClientId = targetClientId
-            await publish(ws.targetClientIdKey, {
+            await publish(targetClientId, {
               info: 'remoteClientConnected',
             })
           }
