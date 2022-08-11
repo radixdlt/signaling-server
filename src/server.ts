@@ -147,13 +147,18 @@ const server = async () => {
           ws.target = target
           ws.targetClientIdKey = `${ws.connectionId}:${source}`
 
-          await Promise.all([
+          const [, , targetClientId] = await Promise.all([
             subscribe(ws, id),
             setData(connectionId, target, id),
-            publish(ws.targetClientIdKey, {
-              info: 'remoteClientConnected',
-            }),
+            getTargetClientId(ws.targetClientIdKey),
           ])
+
+          if (targetClientId) {
+            ws.targetClientId = targetClientId
+            await publish(ws.targetClientIdKey, {
+              info: 'remoteClientConnected',
+            })
+          }
 
           wsRepo.set(id, ws)
         } catch (error) {
