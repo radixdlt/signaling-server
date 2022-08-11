@@ -21,7 +21,12 @@ import uWs from 'uWebSockets.js'
 import { randomUUID } from 'node:crypto'
 import { parseJSON, checkIfValidSHA256 } from './utils/utils'
 import { rateLimit } from './utils/rate-limit'
-import { MessageTypes } from './messages/_types'
+import {
+  MessageTypes,
+  RemoteClientConnected,
+  RemoteClientDisconnected,
+  RemoteData,
+} from './messages/_types'
 
 const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
 collectDefaultMetrics()
@@ -44,7 +49,7 @@ const server = async () => {
 
   const publish = async (
     dataChanel: string,
-    message: MessageTypes | string
+    message: RemoteData | RemoteClientConnected | RemoteClientDisconnected
   ) => {
     const t0 = performance.now()
     await redis.publish(
@@ -72,13 +77,11 @@ const server = async () => {
   const subscribe = async (ws: uWs.WebSocket, dataChanel: string) => {
     const t0 = performance.now()
     await redis.subscriber.subscribe(dataChanel, (raw) => {
-      parseJSON<Message>(raw).map((message) => {
+      parseJSON<RemoteData | RemoteClientConnected | RemoteClientDisconnected>(
+        raw
+      ).map((message) => {
         outgoingMessageCounter.inc()
-        send(ws, {
-          info: 'remoteData',
-          data: message,
-          requestId: message.requestId,
-        })
+        send(ws, message)
       })
     })
     const t1 = performance.now()
@@ -171,7 +174,7 @@ const server = async () => {
             return ws.end(1013, 'rate limit hit, slow down')
           }
           incomingMessageCounter.inc()
-          const rawMessage = Buffer.from(arrayBuffer).toString('utf8')
+          const rawMessage: string = Buffer.from(arrayBuffer).toString('utf8')
           const parsedResult = parseJSON<Message>(rawMessage)
 
           if (parsedResult.isErr()) {
@@ -207,7 +210,11 @@ const server = async () => {
 
             if (targetClientId) {
               ws.targetClientId = targetClientId
-              await publish(targetClientId, rawMessage)
+              await publish(targetClientId, {
+                info: 'remoteData',
+                data: parsed,
+                requestId: parsed.requestId,
+              })
             } else {
               return send(ws, {
                 info: 'missingRemoteClientError',
