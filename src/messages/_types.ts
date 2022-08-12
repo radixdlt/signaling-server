@@ -16,8 +16,12 @@ export type RemoteClientDisconnected = {
   info: 'remoteClientDisconnected'
 }
 
-export type RemoteClientConnected = {
-  info: 'remoteClientConnected'
+export type RemoteClientIsAlreadyConnected = {
+  info: 'remoteClientIsAlreadyConnected'
+}
+
+export type RemoteClientJustConnected = {
+  info: 'remoteClientJustConnected'
 }
 
 export type MissingRemoteClientError = {
@@ -41,7 +45,8 @@ export type MessageTypes =
   | Confirmation
   | RemoteData
   | RemoteClientDisconnected
-  | RemoteClientConnected
+  | RemoteClientIsAlreadyConnected
+  | RemoteClientJustConnected
   | MissingRemoteClientError
   | InvalidMessageError
   | ValidationError

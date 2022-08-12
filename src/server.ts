@@ -23,7 +23,8 @@ import { parseJSON, checkIfValidSHA256 } from './utils/utils'
 import { rateLimit } from './utils/rate-limit'
 import {
   MessageTypes,
-  RemoteClientConnected,
+  RemoteClientIsAlreadyConnected,
+  RemoteClientJustConnected,
   RemoteClientDisconnected,
   RemoteData,
 } from './messages/_types'
@@ -49,7 +50,11 @@ const server = async () => {
 
   const publish = async (
     dataChanel: string,
-    message: RemoteData | RemoteClientConnected | RemoteClientDisconnected
+    message:
+      | RemoteData
+      | RemoteClientIsAlreadyConnected
+      | RemoteClientJustConnected
+      | RemoteClientDisconnected
   ) => {
     const t0 = performance.now()
     await redis.publish(
@@ -77,9 +82,12 @@ const server = async () => {
   const subscribe = async (ws: uWs.WebSocket, dataChanel: string) => {
     const t0 = performance.now()
     await redis.subscriber.subscribe(dataChanel, (raw) => {
-      parseJSON<RemoteData | RemoteClientConnected | RemoteClientDisconnected>(
-        raw
-      ).map((message) => {
+      parseJSON<
+        | RemoteData
+        | RemoteClientIsAlreadyConnected
+        | RemoteClientJustConnected
+        | RemoteClientDisconnected
+      >(raw).map((message) => {
         outgoingMessageCounter.inc()
         send(ws, message)
       })
@@ -88,7 +96,10 @@ const server = async () => {
     redisSubscribeTime.set(t1 - t0)
   }
 
-  const send = (ws: uWs.WebSocket, message: MessageTypes) => {
+  const send = (
+    ws: uWs.WebSocket,
+    message: MessageTypes | RemoteClientIsAlreadyConnected
+  ) => {
     try {
       ws.send(JSON.stringify(message))
       outgoingMessageCounter.inc()
@@ -158,8 +169,9 @@ const server = async () => {
 
           if (targetClientId) {
             await publish(targetClientId, {
-              info: 'remoteClientConnected',
+              info: 'remoteClientJustConnected',
             })
+            send(ws, { info: 'remoteClientIsAlreadyConnected' })
           }
 
           wsRepo.set(id, ws)
