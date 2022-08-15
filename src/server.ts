@@ -67,7 +67,7 @@ const server = async () => {
 
   const setData = async (connectionId: string, target: string, id: string) => {
     const t0 = performance.now()
-    await redis.publisher.set(`${connectionId}:${target}`, id, { EX: 3600 })
+    await redis.publisher.set(`${connectionId}:${target}`, id, { EX: 86_400 })
     const t1 = performance.now()
     redisSetTime.set(t1 - t0)
   }
