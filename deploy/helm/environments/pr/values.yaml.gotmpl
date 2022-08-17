@@ -15,6 +15,12 @@ ingress:
     - hosts:
         - {{ $SIG_SRV_NS }}.rdx-works-main.extratools.works
 
+autoscaling:
+  enabled: true
+  minReplicas: 8
+  maxReplicas: 30
+  targetCPUUtilizationPercentage: 60
+
 metrics:
   alert_labels:
     env: pr
