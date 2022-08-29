@@ -2,7 +2,6 @@ server:
   port: 4000
   logLevel: info
   nodeEnv: production
-  concurrency: 150
 
 redis:
   sub:

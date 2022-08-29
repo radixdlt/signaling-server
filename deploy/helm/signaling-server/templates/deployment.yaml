@@ -40,8 +40,6 @@ spec:
               value: {{ .Values.server.logLevel | quote }}
             - name: NODE_ENV
               value: {{ .Values.server.nodeEnv | quote }}
-            - name: CONCURRENCY
-              value: {{ .Values.server.concurrency | quote }}
             - name: PORT
               value: {{ .Values.server.port | quote }}
             - name: HTTP_PORT
