@@ -1,12 +1,16 @@
 import { log } from '../utils/log'
 import { createClient } from '@redis/client'
 import { config } from '../config'
-import { Subject } from 'rxjs'
-import { combine, ResultAsync } from 'neverthrow'
+import { ResultAsync } from 'neverthrow'
+import { publishMessageCounter } from '../metrics/metrics'
 
 type RedisClientConfig = Parameters<typeof createClient>[0]
 
-export const redisClient = () => {
+export type CreateDataChannel = Awaited<
+  ReturnType<typeof redisClient>
+>['createDataChannel']
+
+export const redisClient = async () => {
   const subscriberConfig: RedisClientConfig = {
     url: `redis://${config.redis.sub_host}:${config.redis.port}`,
   }
@@ -22,17 +26,12 @@ export const redisClient = () => {
   const subscriber = createClient(subscriberConfig)
   const publisher = createClient(publisherConfig)
 
-  const errorSubject = new Subject<any>()
-  const dataSubject = new Subject<string>()
-
   subscriber.on('error', (err) => {
-    console.error(err)
-    errorSubject.next(err)
+    log.error(err)
   })
 
   publisher.on('error', (err) => {
-    console.error(err)
-    errorSubject.next(err)
+    log.error(err)
   })
 
   subscriber.on('connect', () => {
@@ -68,7 +67,10 @@ export const redisClient = () => {
     ResultAsync.fromPromise(
       publisher.publish(channel, message),
       (e) => e as Error
-    ).map((r) => undefined)
+    ).map(() => {
+      log.trace({ event: 'PublishMessage', message, channel })
+      publishMessageCounter.inc()
+    })
 
   const connectClient = (
     name: string,
@@ -80,20 +82,50 @@ export const redisClient = () => {
       }
     )
 
-  const connect = () =>
-    combine([
+  const subscribeToDataChannel = (
+    dataChannel: string,
+    onMessage: (message: string) => void
+  ) =>
+    ResultAsync.fromPromise(
+      subscriber.subscribe(dataChannel, onMessage),
+      (error) => error as Error
+    )
+
+  const createDataChannel = (
+    dataChannel: string,
+    onMessage: (message: string) => void
+  ) => {
+    log.trace({ event: 'DataChanelSubscribe', dataChannel })
+    return subscribeToDataChannel(dataChannel, onMessage).map(() => ({
+      unsubscribe: () => {
+        log.trace({ event: 'DataChanelUnsubscribe', dataChannel })
+        return ResultAsync.fromPromise(
+          subscriber.unsubscribe(dataChannel),
+          (error) => error as Error
+        )
+      },
+    }))
+  }
+
+  const connect = async () =>
+    ResultAsync.combine([
       connectClient('publisher', publisher),
       connectClient('subscriber', subscriber),
-    ]).map(() => {
-      subscriber.subscribe(config.redis.pubSubDataChannel, (connectionId) => {
-        dataSubject.next(connectionId)
-      })
-    })
+    ])
+
+  const connection = await connect()
+
+  // A redis connection error at this point is most likely caused by a misconfiguration
+  if (connection.isErr()) {
+    console.error(connection.error)
+    log.error(connection.error)
+    throw connection.error
+  }
 
   return {
-    connect,
+    createDataChannel,
     publish,
-    error$: errorSubject.asObservable(),
-    data$: dataSubject.asObservable(),
+    publisher,
+    subscriber,
   }
 }

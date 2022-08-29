@@ -1,11 +1,11 @@
 up:
-	docker-compose up -d
+	docker-compose up
 
 up-prod:
-	docker-compose -f ./docker-compose.prod.yml up -d --build
+	docker-compose -f ./docker-compose.prod.yml up --build
 
 up-test:
-	docker-compose -f ./docker-compose.yml -f ./docker-compose.test.yml up -d 
+	docker-compose -f ./docker-compose.yml -f ./docker-compose.test.yml up
 
 up-test-build:
 	docker-compose -f ./docker-compose.yml -f ./docker-compose.test.yml up -d --build

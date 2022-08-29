@@ -22,6 +22,10 @@ type Config = {
   nodeEnv: string
   instanceId: string
   ws: { heartbeatInterval: number }
+  rateLimit: {
+    messages: number
+    time: number
+  }
 }
 
 export const config: Config = {
@@ -39,5 +43,9 @@ export const config: Config = {
   instanceId: v4(),
   ws: {
     heartbeatInterval: 30 * 1000,
+  },
+  rateLimit: {
+    messages: parseInt(process.env.RATE_LIMIT_MESSAGES || '100'),
+    time: parseInt(process.env.RATE_LIMIT_MS || '1000'),
   },
 }
