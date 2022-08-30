@@ -3,12 +3,13 @@ import { z, object, string, union, literal, number } from 'zod'
 const Offer = literal('offer')
 const Answer = literal('answer')
 const Ice = literal('iceCandidate')
+const IceCandidates = literal('iceCandidates')
 
-const Methods = union([Offer, Answer, Ice])
+const Methods = union([Offer, Answer, Ice, IceCandidates])
 
 export const MessageIO = object({
   requestId: string(),
-  method: union([Answer, Offer, Ice]),
+  method: Methods,
   source: union([literal('wallet'), literal('extension')]),
   connectionId: string(),
   encryptedPayload: string(),
