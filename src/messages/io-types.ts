@@ -9,7 +9,7 @@ const Methods = union([Offer, Answer, Ice, IceCandidates])
 
 export const MessageIO = object({
   requestId: string(),
-  method: union([Answer, Offer, Ice]),
+  method: Methods,
   source: union([literal('wallet'), literal('extension')]),
   connectionId: string(),
   encryptedPayload: string(),
