@@ -48,7 +48,12 @@ jobs:
           set -euo pipefail
 
           curl -XPOST -sfL -v -u "$LOCUST_USER:$LOCUST_PASS" https://signaling-lcst.extratools.works/swarm \
-            -d '{"locust_count": "1000", "host": "https://signaling-server-dev.rdx-works-main.extratools.works"}'
+            -d "host=https://signaling-server-dev.rdx-works-main.extratools.works" \
+            -d "spawn_rate=10" \
+            -d "user_count=1000"
+
+            # Run the script for 10 minutes.
+            sleep 600
         env:
           LOCUST_USER: ${{ secrets.LOCUST_USER }}
           LOCUST_PASS: ${{ secrets.LOCUST_PASS }}
