@@ -31,6 +31,7 @@ metrics:
   interval: 30s
   dashboard_url: "https://radixdlt.grafana.net/d/aegEXd97z/turn-server?orgId=1"
   environment: "dev"
+  cluster: rdx-works-main-dev
 
 resources:
   limits:

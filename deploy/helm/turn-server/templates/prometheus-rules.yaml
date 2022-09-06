@@ -14,6 +14,9 @@ spec:
       labels:
         severity: critical
         env: {{ .Values.metrics.environment }}
+        tier: infrastructure
+        application: signaling-server
+        cluster: {{ .Values.metrics.cluster }}
       for: 5m
       annotations:
         summary: "No TURN metrics available"
