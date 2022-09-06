@@ -2,9 +2,6 @@ name: load-testing
 on:
   schedule:
     - cron:  '10 0 * * MON'
-  push:
-    branches:
-      - load-testing
 
 jobs:
   locust:
@@ -49,10 +46,9 @@ jobs:
 
           curl -XPOST -sfL -v -u "$LOCUST_USER:$LOCUST_PASS" https://signaling-lcst.extratools.works/swarm \
             -d "host=https://signaling-server-dev.rdx-works-main.extratools.works" \
-            -d "spawn_rate=10" \
-            -d "user_count=1000"
+            -d "spawn_rate=100" \
+            -d "user_count=70000"
 
-            # Run the script for 10 minutes.
             sleep 600
         env:
           LOCUST_USER: ${{ secrets.LOCUST_USER }}
