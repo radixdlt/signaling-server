@@ -9,7 +9,7 @@ data:
     log-file=stdout
     pidfile=/var/tmp/turnserver.pid
     listening-port={{ .Values.service.port }}
-    realm={{ .Values.service.hostname }}
+    realm={{ .Values.service.hostname.udp }}
     server-name=turnserver
 
     redis-userdb="ip={{ .Values.redis.host }} dbname=coturn password={{ .Values.redis.password }} port={{ .Values.redis.port }} connect_timeout=30"
