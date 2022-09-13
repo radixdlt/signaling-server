@@ -2,6 +2,9 @@ name: load-testing
 on:
   schedule:
     - cron:  '10 0 * * MON'
+  push:
+    branches:
+      - e2e-tests
 
 jobs:
   locust:
@@ -53,6 +56,13 @@ jobs:
         env:
           LOCUST_USER: ${{ secrets.LOCUST_USER }}
           LOCUST_PASS: ${{ secrets.LOCUST_PASS }}
+
+      - name: Run e2e tests
+        run: |
+          eval `ssh-agent -s`
+          ssh-add - <<< '${{ secrets.PRIVATE_SSH_KEY }}'
+          git clone git@github.com:radixdlt/connector-extension.git e2e-tests
+          make -C e2e-tests test
 
       - name: Scale down the workers
         if: always()
