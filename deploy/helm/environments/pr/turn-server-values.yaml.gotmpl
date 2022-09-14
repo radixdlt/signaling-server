@@ -1,15 +1,7 @@
-{{ $SIG_SRV_NS := .Namespace }}
-
 service:
-  hostname: turn-dev-{{ $SIG_SRV_NS }}.rdx-works-main.extratools.works
+  hostname:
+    tcp: turn-dev-tcp-{{ .Namespace }}.rdx-works-main.extratools.works
+    udp: turn-dev-udp-{{ .Namespace }}.rdx-works-main.extratools.works
 
 metrics:
   environment: "pr"
-
-#TODO: remove, just for testing
-redis:
-  host: signaling-server-redis-test-01.7ffct2.ng.0001.euw2.cache.amazonaws.com
-  port: 6379
-  password:
-
-

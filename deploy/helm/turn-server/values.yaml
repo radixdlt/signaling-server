@@ -22,7 +22,7 @@ podSecurityContext: {}
 securityContext: {}
 
 service:
-  hostname: turn-dev.extratools.works
+  hostname: null
   type: LoadBalancer
   port: 3478
 
