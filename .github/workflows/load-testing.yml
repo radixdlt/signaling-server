@@ -46,13 +46,51 @@ jobs:
 
           curl -XPOST -sfL -v -u "$LOCUST_USER:$LOCUST_PASS" https://signaling-lcst.extratools.works/swarm \
             -d "host=https://signaling-server-dev.rdx-works-main.extratools.works" \
-            -d "spawn_rate=100" \
+            -d "spawn_rate=500" \
             -d "user_count=70000"
 
             sleep 600
         env:
           LOCUST_USER: ${{ secrets.LOCUST_USER }}
           LOCUST_PASS: ${{ secrets.LOCUST_PASS }}
+
+      - name: Run e2e tests
+        run: |
+          eval `ssh-agent -s`
+          ssh-add - <<< '${{ secrets.PRIVATE_SSH_KEY }}'
+
+          git clone git@github.com:radixdlt/connector-extension.git e2e-tests
+          cd e2e-tests
+
+          cat <<DOC > .env
+          VITE_APP_SIGNALING_SERVER_BASE_URL=wss://signaling-server-dev.rdx-works-main.extratools.works
+          VITE_APP_LOG_LEVEL=debug
+          DOC
+
+          cat .env
+
+          make test
+
+      - name: Send slack notification
+        if: failure()
+        run: |
+          ./.github/scripts/send-slack-notif.sh \
+            -t "The signaling server load testing failed" \
+            -l ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \
+            -m "Check the logs for more information" \
+            -c "DANGER"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send slack notification
+        run: |
+          ./.github/scripts/send-slack-notif.sh \
+            -t "The signaling server load testing passed" \
+            -l ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \
+            -m "Check the logs for more information" \
+            -c "SUCCESS"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Scale down the workers
         if: always()
