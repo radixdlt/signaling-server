@@ -2,6 +2,24 @@ name: load-testing
 on:
   schedule:
     - cron:  '10 0 * * MON'
+  workflow_dispatch:
+    inputs:
+      totalTime:
+        description: 'The total time of the load test in seconds'
+        required: false
+        default: '600'
+      spawnRate:
+        description: 'The total time of the load test in seconds'
+        required: false
+        default: '500'
+      userCount:
+        required: false
+        description: 'Number of users to emulate'
+        default: "70000"
+      signalingServer:
+        required: false
+        description: 'The signaling server hostname to use'
+        default: "signaling-server-dev.rdx-works-main.extratools.works"
 
 jobs:
   locust:
@@ -42,20 +60,39 @@ jobs:
 
       - name: Run the load test
         run: |
+          # Defautl vaules are defined for the cron schedule.
+          # Values from a workflow_dispatch job won't be available on other events.
+          SPAWN_RATE=${SPAWN_RATE:-500}
+          USER_COUNT=${USER_COUNT:-70000}
+          TOTAL_TIME=${TOTAL_TIME:-600}
+          SIGNALING_SERVER=${SIGNALING_SERVER:-signaling-server-dev.rdx-works-main.extratools.works}
+
           set -euo pipefail
 
-          curl -XPOST -sfL -v -u "$LOCUST_USER:$LOCUST_PASS" https://signaling-lcst.extratools.works/swarm \
-            -d "host=https://signaling-server-dev.rdx-works-main.extratools.works" \
-            -d "spawn_rate=500" \
-            -d "user_count=70000"
+          echo "Starting load test on server $SIGNALING_SERVER for $TOTAL_TIME seconds"
+          echo "Spawn rate: $SPAWN_RATE"
+          echo "User count: $USER_COUNT"
 
-            sleep 600
+          curl -XPOST -sfL -v -u "$LOCUST_USER:$LOCUST_PASS" https://signaling-lcst.extratools.works/swarm \
+            -d "host=https://$SIGNALING_SERVER" \
+            -d "spawn_rate=$SPAWN_RATE" \
+            -d "user_count=$USER_COUNT"
+
+          sleep $TOTAL_TIME
         env:
           LOCUST_USER: ${{ secrets.LOCUST_USER }}
           LOCUST_PASS: ${{ secrets.LOCUST_PASS }}
+          SPAWN_RATE: ${{ inputs.spawnRate }}
+          USER_COUNT: ${{ inputs.userCount }}
+          TOTAL_TIME: ${{ inputs.totalTime }}
+          SIGNALING_SERVER: ${{ inputs.signalingServer }}
 
       - name: Run e2e tests
         run: |
+          SIGNALING_SERVER=${SIGNALING_SERVER:-signaling-server-dev.rdx-works-main.extratools.works}
+
+          echo "Starting e2e tests on $SIGNALING_SERVER"
+
           eval `ssh-agent -s`
           ssh-add - <<< '${{ secrets.PRIVATE_SSH_KEY }}'
 
@@ -63,13 +100,15 @@ jobs:
           cd e2e-tests
 
           cat <<DOC > .env
-          VITE_APP_SIGNALING_SERVER_BASE_URL=wss://signaling-server-dev.rdx-works-main.extratools.works
+          VITE_APP_SIGNALING_SERVER_BASE_URL=wss://$SIGNALING_SERVER
           VITE_APP_LOG_LEVEL=debug
           DOC
 
           cat .env
 
           make test
+        env:
+          SIGNALING_SERVER: ${{ inputs.signalingServer }}
 
       - name: Send slack notification
         if: failure()
