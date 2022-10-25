@@ -8,6 +8,10 @@ helmDefaults:
 repositories:
   - name: bitnami
     url: https://charts.bitnami.com/bitnami
+  - name: rdx-works
+    url: https://raw.githubusercontent.com/radixdlt/helm-charts/master/
+    username: {{ requiredEnv "HELM_GH_USER" }}
+    password: {{ requiredEnv "HELM_GH_PASS" }}
 environments:
   default: {}
   dev: {}
@@ -65,6 +69,7 @@ releases:
           tag: {{ $SIG_SRV_IMAGE_TAG }}
   - name: developer-access
     namespace: {{ $SIG_SRV_NS}}
-    chart: ./developer-access
+    chart: rdx-works/developer-access
+    version: 1.0.0
     values:
       - project: signaling-server
