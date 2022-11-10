@@ -23,3 +23,12 @@ redis:
     host: signaling-server-dev-cache-ro.7ffct2.ng.0001.euw2.cache.amazonaws.com
   port: 6379
   password:
+
+alertmanager:
+  env: "dev"
+  nameOverride: "ng-amcfg"
+  slackConfig:
+    channel: "feed--alerts-dev-web-rtc"
+  secrets:
+    region: eu-west-2
+    name: "rdx-works-main-dev/eks/signaling-server/alertmanager-integration-keys"
