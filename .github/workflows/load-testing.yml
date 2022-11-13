@@ -30,17 +30,17 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
         with:
           fetch-depth: 0
 
       - name: Install AWS CLI
-        uses: unfor19/install-aws-cli-action@v1
+        uses: unfor19/install-aws-cli-action@8a86d81a0f1393cff1f44c77010cb2707e8a1066
         with:
           version: 2
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.6.1
+        uses: aws-actions/configure-aws-credentials@811cf67cbe28fd16d5a320c029542d8a3ae178c0
         with:
           role-to-assume: arn:aws:iam::308190735829:role/gh-signaling-server-load-testing-runner
           aws-region: eu-west-2
