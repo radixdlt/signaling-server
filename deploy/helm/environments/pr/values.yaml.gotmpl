@@ -3,7 +3,7 @@
 ingress:
   enabled: true
   annotations:
-    kubernetes.io/ingress.class: nginx-load-testing
+    kubernetes.io/ingress.class: nginx
   hosts:
     - host: {{ $SIG_SRV_NS }}.rdx-works-main.extratools.works
       paths:
