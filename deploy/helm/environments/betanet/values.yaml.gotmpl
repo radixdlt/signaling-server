@@ -1,0 +1,34 @@
+ingress:
+  enabled: true
+  hosts:
+    - host: signaling-server-betanet.radixdlt.com
+      paths:
+      - path: /
+        backend:
+          serviceName: signaling-server
+          servicePort: 4000
+  tls:
+    - hosts:
+        - signaling-server-betanet.radixdlt.com
+
+metrics:
+  alert_labels:
+    env: betanet
+    cluster: rdx-works-main-dev
+
+redis:
+  pub:
+    host: signaling-server-betanet-cache.7ffct2.ng.0001.euw2.cache.amazonaws.com
+  sub:
+    host: signaling-server-betanet-cache-ro.7ffct2.ng.0001.euw2.cache.amazonaws.com
+  port: 6379
+  password:
+
+alertmanager:
+  env: "betanet"
+  nameOverride: "webrtc-amcfg"
+  slackConfig:
+    channel: "feed--alerts-betanet-web-rtc"
+  secrets:
+    region: eu-west-2
+    name: "rdx-works-main-dev/eks/signaling-server/betanet/alertmanager-integration-keys"
