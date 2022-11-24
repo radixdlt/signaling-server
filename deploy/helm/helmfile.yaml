@@ -79,7 +79,7 @@ releases:
   - name: alertmanager
     namespace: {{ $SIG_SRV_NS }}
     chart: rdx-works/alertmanager-configs
-    installed: {{ if not (eq (.StateValues.ci.NG_ENVIRONMENT_NAME) "pr") }}
+    installed: {{ if not (eq (.Environment.Name) "pr") }}
     version: 1.0.0
     values:
       - environments/{{ .Environment.Name }}/values.yaml.gotmpl
