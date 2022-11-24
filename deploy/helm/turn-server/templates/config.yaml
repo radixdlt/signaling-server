@@ -12,7 +12,7 @@ data:
     realm={{ .Values.service.hostname.udp }}
     server-name=turnserver
 
-    redis-userdb="ip={{ .Values.redis.host }} dbname=coturn password={{ .Values.redis.password }} port={{ .Values.redis.port }} connect_timeout=30"
+    #redis-userdb="ip={{ .Values.redis.host }} dbname=coturn password={{ .Values.redis.password }} port={{ .Values.redis.port }} connect_timeout=30"
 
     listening-ip=0.0.0.0
     fingerprint
