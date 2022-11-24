@@ -140,7 +140,6 @@ jobs:
       helmfile_extra_vars: >-
         ci.tag=${{ needs.build.outputs.tag }},
         ci.environment=betanet
-      environment: betanet
     secrets:
       HELM_GH_USER: ${{ secrets.HELM_GH_USER }}
       HELM_GH_PASS: ${{ secrets.HELM_GH_PASS }}
