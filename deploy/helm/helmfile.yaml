@@ -21,7 +21,7 @@ releases:
 {{ $SIG_SRV_NS := .Namespace }}
 {{ $SIG_SRV_IMAGE_TAG := .StateValues.ci.tag }}
 {{ $ENVIRONMENT_NAME := .Environment.Name }}
-{{ $INSTALL_LOCAL_REDIS := ternary (eq $ENVIRONMENT_NAME "pr") true false }}
+{{ $INSTALL_LOCAL_REDIS := eq $ENVIRONMENT_NAME "pr" }}
 
   - name: redis
     namespace: {{ $SIG_SRV_NS }}
@@ -79,7 +79,7 @@ releases:
   - name: alertmanager
     namespace: {{ $SIG_SRV_NS }}
     chart: rdx-works/alertmanager-configs
-    installed: {{ if not (eq (.Environment.Name) "pr") }}
+    installed: {{ ne $ENVIRONMENT_NAME "pr" }}
     version: 1.0.0
     values:
       - environments/{{ .Environment.Name }}/values.yaml.gotmpl
