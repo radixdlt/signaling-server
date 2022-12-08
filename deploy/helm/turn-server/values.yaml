@@ -25,6 +25,7 @@ service:
   hostname: null
   type: LoadBalancer
   port: 3478
+  sslCertificate: null
 
 metrics:
   enabled: true
