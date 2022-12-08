@@ -4,6 +4,7 @@ kind: Service
 metadata:
   name: {{ include "turn-server.fullname" . }}-udp
   annotations:
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.service.hostname.udp }}
     service.beta.kubernetes.io/aws-load-balancer-type: "external"
     service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
@@ -27,6 +28,7 @@ kind: Service
 metadata:
   name: {{ include "turn-server.fullname" . }}-tcp
   annotations:
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.service.hostname.tcp }}
     service.beta.kubernetes.io/aws-load-balancer-type: "external"
     service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
