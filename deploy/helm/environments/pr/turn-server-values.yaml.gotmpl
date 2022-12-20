@@ -2,6 +2,9 @@ service:
   hostname:
     tcp: turn-dev-tcp-{{ .Namespace }}.rdx-works-main.extratools.works
     udp: turn-dev-udp-{{ .Namespace }}.rdx-works-main.extratools.works
+    tls: turn-dev-tls-{{ .Namespace }}.rdx-works-main.extratools.works
+
+  tlsCertificate: arn:aws:acm:eu-west-2:308190735829:certificate/ebbe0549-87fe-4582-9d4d-ca7781b8eee1
 
 metrics:
   environment: "pr"

@@ -2,6 +2,31 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: {{ include "turn-server.fullname" . }}-tls
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.service.hostname.tls }}
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: {{ .Values.service.port | quote }}
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: TCP
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: {{ .Values.service.tlsCertificate }}
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "turn-tls"
+  labels:
+    {{- include "turn-server.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: turn-tls
+      targetPort: turn-tcp
+      port: 443
+      protocol: TCP
+  selector:
+    {{- include "turn-server.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: {{ include "turn-server.fullname" . }}-udp
   annotations:
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
