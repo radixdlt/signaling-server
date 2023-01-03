@@ -17,6 +17,7 @@ spec:
         tier: infrastructure
         application: signaling-server
         cluster: {{ .Values.metrics.cluster }}
+        namespace: {{ .Release.Namespace }}
       for: 5m
       annotations:
         summary: "No TURN metrics available"
