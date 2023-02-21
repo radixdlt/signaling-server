@@ -13,6 +13,7 @@ export const MessageIO = object({
   source: union([literal('wallet'), literal('extension')]),
   connectionId: string(),
   encryptedPayload: string(),
+  targetClientId: string(),
   startAt: number().optional(),
 })
 
