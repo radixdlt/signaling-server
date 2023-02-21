@@ -5,7 +5,8 @@ const getEnv = (key: string) => {
   if (env) {
     return env
   }
-  throw `missing env: ${key}`
+  return ''
+  // throw `missing env: ${key}`
 }
 
 type Config = {

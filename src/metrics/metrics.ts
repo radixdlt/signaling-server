@@ -1,5 +1,5 @@
-import client from 'prom-client'
-import gcStats from 'prometheus-gc-stats'
+import client from 'bun-prometheus-client'
+// import gcStats from 'prometheus-gc-stats'
 
 export const connectedClientsGauge = new client.Gauge({
   name: 'signaling_server_connected_clients',
@@ -51,8 +51,8 @@ export const redisSubscribeTime = new client.Gauge({
   help: 'The time it takes for redis to subscribe to data channel',
 })
 
-gcStats(client.register, {
-  prefix: 'signaling_server_',
-})()
+// gcStats(client.register, {
+//   prefix: 'signaling_server_',
+// })()
 
 export const prometheusClient = client

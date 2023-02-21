@@ -113,26 +113,25 @@ const server = async () => {
     }
   }
 
-  uWs
-    .App()
-    .ws('/*', {
-      upgrade: (res, req, context) => {
-        res.upgrade(
-          {
-            ip: res.getRemoteAddressAsText(),
-            url: new URL(`https://x.cc${req.getUrl()}?${req.getQuery()}`),
-          },
-          req.getHeader('sec-websocket-key'),
-          req.getHeader('sec-websocket-protocol'),
-          req.getHeader('sec-websocket-extensions'),
-          context
-        )
-      },
+  Bun.serve({
+    fetch(req, server) {
+      console.log('request:', req, server);
+
+      if (server.upgrade(req, {
+        data: {
+          url: new URL(req.url),
+        },
+      }))
+        return;
+  
+      return new Response("Regular HTTP response");
+    },
+    websocket: {
       open: async (ws) => {
         try {
           ++connections
           connectedClientsGauge.set(connections)
-          const url: URL = ws.url
+          const url: URL = ws.data.url
           const connectionId = url.pathname.slice(1)
           const target = url.searchParams.get('target')
           const source = url.searchParams.get('source')
@@ -270,14 +269,8 @@ const server = async () => {
           log.error(error)
         }
       },
-    })
-    .listen(config.port, (token) => {
-      if (token) {
-        log.info('Listening to port ' + config.port)
-      } else {
-        log.info('Failed to listen to port ' + config.port)
-      }
-    })
+    }
+  })
 }
 
 const runServer = async () => {

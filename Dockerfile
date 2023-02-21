@@ -1,15 +1,12 @@
-FROM node:16 as base
+FROM oven/bun as base
 
-WORKDIR /home/node/app
+WORKDIR /app
 
-COPY package.json ./
+COPY package.json package.json
+COPY bun.lockb bun.lockb
 
-RUN yarn
+RUN bun install
 
 COPY . .
 
-FROM base as production
-
-ENV NODE_PATH=./build
-
-RUN yarn build
+ENTRYPOINT ["bun", "src/server.ts"]

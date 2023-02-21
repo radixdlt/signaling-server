@@ -7,7 +7,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./src:/home/node/app/src
-      - ./nodemon.json:/home/node/app/nodemon.json
     container_name: signaling-server
     expose:
       - '4000'
@@ -23,8 +22,7 @@ services:
       PORT: 4000
       HTTP_PORT: 4001
       LOG_LEVEL: info
-      NODE_ENV: production
-    command: yarn start
+    command: bun src/server.ts
     depends_on:
       - redis
   redis:
