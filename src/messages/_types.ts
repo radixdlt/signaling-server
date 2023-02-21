@@ -10,18 +10,22 @@ export type RemoteData = {
   info: 'remoteData'
   requestId: Message['requestId']
   data: Message
+  remoteClientId: string
 }
 
 export type RemoteClientDisconnected = {
   info: 'remoteClientDisconnected'
+  remoteClientId: string
 }
 
 export type RemoteClientIsAlreadyConnected = {
   info: 'remoteClientIsAlreadyConnected'
+  remoteClientId: string
 }
 
 export type RemoteClientJustConnected = {
   info: 'remoteClientJustConnected'
+  remoteClientId: string
 }
 
 export type MissingRemoteClientError = {

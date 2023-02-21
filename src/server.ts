@@ -15,7 +15,6 @@ import {
   redisSubscribeTime,
 } from './metrics/metrics'
 import './http/http-server'
-import { wsRepo } from './data/websocket-repo'
 import { config } from './config'
 import uWs from 'uWebSockets.js'
 import { randomUUID } from 'node:crypto'
@@ -40,12 +39,12 @@ const includesSource = (value: string) =>
 const server = async () => {
   const redis = await redisClient()
 
-  const getTargetClientId = async (targetClientIdKey: string) => {
+  const getTargetWebsocketIds = async (targetClientIdKey: string) => {
     const t0 = performance.now()
-    const clientId = await redis.publisher.get(targetClientIdKey)
+    const clientIds = await redis.publisher.sMembers(targetClientIdKey)
     const t1 = performance.now()
     redisGetKeyTime.set(t1 - t0)
-    return clientId
+    return clientIds
   }
 
   const publish = async (
@@ -65,18 +64,23 @@ const server = async () => {
     redisPublishTime.set(t1 - t0)
   }
 
-  const setData = async (connectionId: string, target: string, id: string) => {
+  const setData = async (key: string, value: string) => {
     const t0 = performance.now()
-    await redis.publisher.set(`${connectionId}:${target}`, id, { EX: 86_400 })
+    await redis.publisher.sAdd(key, value)
+    await redis.publisher.expire(key, 43_200)
     const t1 = performance.now()
     redisSetTime.set(t1 - t0)
   }
 
-  const removeData = async (connectionId: string, target: string) => {
+  const removeData = async (key: string, value: string) => {
     const t0 = performance.now()
-    await redis.publisher.del(`${connectionId}:${target}`)
+    await redis.publisher.sRem(key, value)
     const t1 = performance.now()
     redisDeleteTime.set(t1 - t0)
+  }
+
+  const isMember = async (key: string, value: string) => {
+    return !!(await redis.publisher.sIsMember(key, value))
   }
 
   const subscribe = async (ws: uWs.WebSocket, dataChanel: string) => {
@@ -96,10 +100,7 @@ const server = async () => {
     redisSubscribeTime.set(t1 - t0)
   }
 
-  const send = (
-    ws: uWs.WebSocket,
-    message: MessageTypes | RemoteClientIsAlreadyConnected
-  ) => {
+  const send = (ws: uWs.WebSocket, message: MessageTypes) => {
     try {
       ws.send(JSON.stringify(message))
       outgoingMessageCounter.inc()
@@ -155,26 +156,34 @@ const server = async () => {
           if (source === target) {
             return ws.end(1003, `source and target needs to be different`)
           }
-          const id = randomUUID()
-          ws.id = id
-          ws.connectionId = connectionId
-          ws.target = target
-          ws.targetClientIdKey = `${ws.connectionId}:${source}`
 
-          const [, , targetClientId] = await Promise.all([
-            subscribe(ws, id),
-            setData(connectionId, target, id),
-            getTargetClientId(ws.targetClientIdKey),
+          const websocketId = randomUUID()
+          ws.id = websocketId
+          ws.connectionId = connectionId
+          ws.source = source
+          ws.targetClient = `${ws.connectionId}:${target}`
+
+          const [, , targetWebsocketIds] = await Promise.all([
+            subscribe(ws, websocketId),
+            setData(`${connectionId}:${source}`, websocketId),
+            getTargetWebsocketIds(ws.targetClient),
           ])
 
-          if (targetClientId) {
-            await publish(targetClientId, {
-              info: 'remoteClientJustConnected',
-            })
-            send(ws, { info: 'remoteClientIsAlreadyConnected' })
-          }
+          if (targetWebsocketIds && targetWebsocketIds.length > 0) {
+            await Promise.all(
+              targetWebsocketIds.map((targetWebsocketId) => {
+                send(ws, {
+                  info: 'remoteClientIsAlreadyConnected',
+                  remoteClientId: targetWebsocketId,
+                })
 
-          wsRepo.set(id, ws)
+                return publish(targetWebsocketId, {
+                  info: 'remoteClientJustConnected',
+                  remoteClientId: websocketId,
+                })
+              })
+            )
+          }
         } catch (error) {
           log.error(error)
           ws.end(1011, 'could not handle connection, try again')
@@ -209,30 +218,18 @@ const server = async () => {
             })
           }
 
-          const targetClientWebsocket = wsRepo.get(ws.targetClientId)
-
-          if (targetClientWebsocket) {
-            send(targetClientWebsocket, {
+          if (await isMember(ws.targetClient, parsed.targetClientId)) {
+            await publish(parsed.targetClientId, {
               info: 'remoteData',
               data: parsed,
+              remoteClientId: ws.id,
               requestId: parsed.requestId,
             })
           } else {
-            const targetClientId = await getTargetClientId(ws.targetClientIdKey)
-
-            if (targetClientId) {
-              ws.targetClientId = targetClientId
-              await publish(targetClientId, {
-                info: 'remoteData',
-                data: parsed,
-                requestId: parsed.requestId,
-              })
-            } else {
-              return send(ws, {
-                info: 'missingRemoteClientError',
-                requestId: parsed.requestId,
-              })
-            }
+            return send(ws, {
+              info: 'missingRemoteClientError',
+              requestId: parsed.requestId,
+            })
           }
 
           send(ws, { info: 'confirmation', requestId: parsed.requestId })
@@ -248,18 +245,24 @@ const server = async () => {
         connectedClientsGauge.set(connections)
         try {
           if (ws.id) {
-            const targetClientId = await getTargetClientId(ws.targetClientIdKey)
-            if (targetClientId) {
-              await publish(targetClientId, {
-                info: 'remoteClientDisconnected',
-              })
+            const targetWebsocketIds = await getTargetWebsocketIds(
+              ws.targetClient
+            )
+            if (targetWebsocketIds && targetWebsocketIds.length) {
+              await Promise.all(
+                targetWebsocketIds.map((targetWebsocketId) =>
+                  publish(targetWebsocketId, {
+                    info: 'remoteClientDisconnected',
+                    remoteClientId: ws.id,
+                  })
+                )
+              )
             }
+
             await Promise.all([
               redis.subscriber.unsubscribe(ws.id),
-              removeData(ws.connectionId, ws.target),
+              removeData(`${ws.connectionId}:${ws.source}`, ws.id),
             ])
-
-            wsRepo.delete(ws.id)
           }
 
           log.trace({
