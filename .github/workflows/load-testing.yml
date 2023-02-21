@@ -74,7 +74,7 @@ jobs:
           echo "User count: $USER_COUNT"
 
           curl -XPOST -sfL -v -u "$LOCUST_USER:$LOCUST_PASS" https://signaling-lcst.extratools.works/swarm \
-            -d "host=https://$SIGNALING_SERVER" \
+            -d "host=wss://$SIGNALING_SERVER" \
             -d "spawn_rate=$SPAWN_RATE" \
             -d "user_count=$USER_COUNT"
 
