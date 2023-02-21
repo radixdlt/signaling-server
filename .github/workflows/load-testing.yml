@@ -55,8 +55,8 @@ jobs:
 
       - name: Scale up the workers
         run: |
-          kubectl scale deploy load-injector-worker -n load-injector-signaling-server --replicas 30
-          kubectl rollout status deployment load-injector-worker -n load-injector-signaling-server
+          kubectl scale deploy locust-worker -n load-injector-signaling-server --replicas 30
+          kubectl rollout status deployment locust-worker -n load-injector-signaling-server
 
       - name: Run the load test
         run: |
@@ -134,5 +134,5 @@ jobs:
       - name: Scale down the workers
         if: always()
         run: |
-          kubectl scale deploy load-injector-worker -n load-injector-signaling-server --replicas 0
-          kubectl rollout restart deploy load-injector-master -n load-injector-signaling-server
+          kubectl scale deploy locust-worker -n load-injector-signaling-server --replicas 0
+          kubectl rollout restart deploy locust-master -n load-injector-signaling-server
