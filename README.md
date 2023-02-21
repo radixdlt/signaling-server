@@ -1,22 +1,10 @@
 # Signaling server
 
-## For running locally
+## Development Setup
 
-`npm i`
+`yarn install`
 
-### Start the dev server
-
-`npm run dev`
-
-### Build the project
-
-`npm run build`
-
-### Start built project
-
-`npm start`
-
-## For running Docker Containers
+### Running Docker Containers
 
 _You'll need docker installed on your machine to run this!_
 
@@ -24,9 +12,16 @@ _You'll need docker installed on your machine to run this!_
 
 `docker-compose build`
 
-### Start the dev server
+### Start the dev server and Redis instance
 
 `make up`
+
+## Running Tests
+
+`make up-test` - run two local Signaling Server instances and redis instance
+`yarn test` - execute tests
+
+## Additional commands
 
 ### Build and start dev server
 
