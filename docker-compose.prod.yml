@@ -10,17 +10,15 @@ services:
     container_name: signaling-server
     expose:
       - '4000'
-      - '4001'
     ports:
       - '4000:4000'
-      - '4001:4001'
     environment:
       REDIS_HOST_PUB: redis
       REDIS_HOST_SUBS: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
       PORT: 4000
-      HTTP_PORT: 4001
+      HTTP_PORT: 4000
       LOG_LEVEL: info
     command: bun src/server.ts
     depends_on:

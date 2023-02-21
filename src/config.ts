@@ -5,6 +5,7 @@ const getEnv = (key: string) => {
   if (env) {
     return env
   }
+  console.log(`missing env: ${key}`);
   return ''
   // throw `missing env: ${key}`
 }
@@ -19,7 +20,6 @@ type Config = {
   }
   logLevel: string
   port: number
-  httpPort: number
   nodeEnv: string
   instanceId: string
   ws: { heartbeatInterval: number }
@@ -39,7 +39,6 @@ export const config: Config = {
   },
   logLevel: getEnv('LOG_LEVEL'),
   port: parseInt(getEnv('PORT')),
-  httpPort: parseInt(getEnv('HTTP_PORT')),
   nodeEnv: getEnv('NODE_ENV'),
   instanceId: v4(),
   ws: {

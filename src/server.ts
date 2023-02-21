@@ -14,7 +14,6 @@ import {
   redisSetTime,
   redisSubscribeTime,
 } from './metrics/metrics'
-import './http/http-server'
 import { wsRepo } from './data/websocket-repo'
 import { config } from './config'
 import uWs from 'uWebSockets.js'
@@ -114,17 +113,26 @@ const server = async () => {
   }
 
   Bun.serve({
+    port: config.port,
     fetch(req, server) {
-      console.log('request:', req, server);
+      if (req.url.includes('/health')) {
+        return new Response('ok')
+      } else if (req.url.includes('/metrics')) {
+        return prometheusClient.register
+          .metrics()
+          .then((metrics) => new Response(metrics))
+      }
 
-      if (server.upgrade(req, {
-        data: {
-          url: new URL(req.url),
-        },
-      }))
-        return;
-  
-      return new Response("Regular HTTP response");
+      if (
+        server.upgrade(req, {
+          data: {
+            url: new URL(req.url),
+          },
+        })
+      )
+        return
+
+      return new Response('Regular HTTP response')
     },
     websocket: {
       open: async (ws) => {
@@ -269,7 +277,7 @@ const server = async () => {
           log.error(error)
         }
       },
-    }
+    },
   })
 }
 

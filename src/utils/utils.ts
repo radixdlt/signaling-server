@@ -1,6 +1,4 @@
-import { config } from '../config'
 import { err, ok, Result } from 'neverthrow'
-import uWs from 'uWebSockets.js'
 
 export const bufferToString = (
   buffer: Buffer | ArrayBuffer | Buffer[]
