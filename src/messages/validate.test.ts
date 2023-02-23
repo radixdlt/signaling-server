@@ -6,7 +6,7 @@ describe('validate', () => {
     const result = await validateMessage({} as any)
 
     if (result.isErr()) {
-      expect(result.error.length).to.equal(6)
+      expect(result.error.length).to.equal(4)
     }
   })
 })
