@@ -10,8 +10,8 @@ const Methods = union([Offer, Answer, Ice, IceCandidates])
 export const MessageIO = object({
   requestId: string(),
   method: Methods,
-  source: union([literal('wallet'), literal('extension')]),
-  connectionId: string(),
+  source: union([literal('wallet'), literal('extension')]).optional(), // redundant field, to be removed
+  connectionId: string().optional(), // redundant field, to be removed
   encryptedPayload: string(),
   targetClientId: string(),
   startAt: number().optional(),
