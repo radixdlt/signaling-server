@@ -32,3 +32,10 @@ alertmanager:
   secrets:
     region: eu-west-2
     name: "rdx-works-main-dev/eks/signaling-server/alertmanager-integration-keys"
+
+resources:
+  limits:
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 256Mi
