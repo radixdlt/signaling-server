@@ -75,7 +75,6 @@ ingress:
 javascriptHeap: 13000
 resources:
   limits:
-    cpu: 1200m
     memory: 6Gi
   requests:
     cpu: 1200m

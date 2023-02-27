@@ -34,3 +34,10 @@ redis:
     host: signaling-server-dev-cache-ro.7ffct2.ng.0001.euw2.cache.amazonaws.com
   port: 6379
   password:
+
+resources:
+  limits:
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 256Mi
