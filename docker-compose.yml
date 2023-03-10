@@ -11,8 +11,10 @@ services:
       - ./nodemon.json:/home/node/app/nodemon.json
     expose:
       - '4000'
+      - '9229'
     ports:
       - '4000-4001:4000'
+      - '9229-9230:9229'
     environment:
       REDIS_HOST_PUB: redis
       REDIS_HOST_SUBS: redis
