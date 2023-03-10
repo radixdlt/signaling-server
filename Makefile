@@ -1,5 +1,8 @@
 up:
-	docker-compose up
+	docker-compose up --scale signaling-server=2 
+
+up-redis:
+	docker-compose -f ./docker-compose.redis.yml
 
 up-prod:
 	docker-compose -f ./docker-compose.prod.yml up --build

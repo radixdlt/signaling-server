@@ -9,15 +9,10 @@ services:
     volumes:
       - ./src:/home/node/app/src
       - ./nodemon.json:/home/node/app/nodemon.json
-    container_name: signaling-server
     expose:
       - '4000'
-      - '4001'
-      - '9229'
     ports:
-      - '4000:4000'
-      - '4001:4001'
-      - '9229:9229'
+      - '4000-4001:4000'
     environment:
       REDIS_HOST_PUB: redis
       REDIS_HOST_SUBS: redis
@@ -25,7 +20,7 @@ services:
       REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
       PORT: 4000
       HTTP_PORT: 4001
-      LOG_LEVEL: info
+      LOG_LEVEL: 0
       NODE_ENV: dev
     command: npm run dev
     depends_on:
@@ -38,9 +33,7 @@ services:
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes:
       - redisData:/data
-    container_name: signaling-server-redis
   redis-commander:
-    container_name: redis-commander
     hostname: redis-commander
     image: rediscommander/redis-commander:latest
     restart: always
