@@ -68,7 +68,11 @@ export const redisClient = async () => {
       publisher.publish(channel, message),
       (e) => e as Error
     ).map(() => {
-      log.trace({ event: 'PublishMessage', message, channel })
+      log.trace({
+        event: 'PublishMessage',
+        message: JSON.parse(message),
+        channel,
+      })
       publishMessageCounter.inc()
     })
 

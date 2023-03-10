@@ -102,6 +102,10 @@ const server = async () => {
 
   const send = (ws: uWs.WebSocket, message: MessageTypes) => {
     try {
+      log.trace({
+        event: 'SendWSMessage',
+        message: message,
+      })
       ws.send(JSON.stringify(message))
       outgoingMessageCounter.inc()
     } catch (error) {
@@ -168,6 +172,11 @@ const server = async () => {
             setData(`${connectionId}:${source}`, websocketId),
             getTargetWebsocketIds(ws.targetClient),
           ])
+
+          log.trace({
+            event: 'remoteClientsConnected',
+            targetWebsocketIds,
+          })
 
           if (targetWebsocketIds && targetWebsocketIds.length > 0) {
             await Promise.all(

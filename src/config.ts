@@ -1,4 +1,4 @@
-import { v4 } from 'uuid'
+import { randomUUID } from 'node:crypto'
 
 const getEnv = (key: string) => {
   const env = process.env[key]
@@ -40,7 +40,7 @@ export const config: Config = {
   port: parseInt(getEnv('PORT')),
   httpPort: parseInt(getEnv('HTTP_PORT')),
   nodeEnv: getEnv('NODE_ENV'),
-  instanceId: v4(),
+  instanceId: randomUUID(),
   ws: {
     heartbeatInterval: 30 * 1000,
   },
