@@ -1,0 +1,87 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "signaling-server.fullname" . }}
+  labels:
+    {{- include "signaling-server.labels" . | nindent 4 }}
+spec:
+  groups:
+  - name: SignalingServer
+    rules:
+    - alert: HighRedisSetTime
+      expr: 'signaling_server_redis_get_time{namespace="{{ .Release.Namespace }}"} > 1000'
+      labels:
+        severity: warning
+        env: {{ .Values.metrics.alert_labels.env }}
+        tier: application
+        application: signaling-server
+        cluster: {{ .Values.metrics.alert_labels.cluster }}
+        namespace: {{ .Release.Namespace }}
+      for: 5m
+      annotations:
+        summary: "High set times on Redis"
+        description: "The time it takes for redis to set values to a set is over 1s"
+        dashboard: {{ .Values.metrics.dashboard_url }}
+        runbook_url: "https://radixdlt.atlassian.net/wiki/spaces/DT/pages/2563932288/Runbooks"
+    - alert: HighRedisGetTime
+      expr: 'signaling_server_redis_get_time{namespace="{{ .Release.Namespace }}"} > 1000'
+      labels:
+        severity: warning
+        env: {{ .Values.metrics.alert_labels.env }}
+        tier: application
+        application: signaling-server
+        cluster: {{ .Values.metrics.alert_labels.cluster }}
+        namespace: {{ .Release.Namespace }}
+      for: 5m
+      annotations:
+        summary: "High get times on Redis"
+        description: "The time it takes for redis to get values from a set is over 1s"
+        dashboard: {{ .Values.metrics.dashboard_url }}
+        runbook_url: "https://radixdlt.atlassian.net/wiki/spaces/DT/pages/2563932288/Runbooks"
+    - alert: HighRedisDeleteTime
+      expr: 'signaling_server_redis_delete_time{namespace="{{ .Release.Namespace }}"} > 1000'
+      labels:
+        severity: warning
+        env: {{ .Values.metrics.alert_labels.env }}
+        tier: application
+        application: signaling-server
+        cluster: {{ .Values.metrics.alert_labels.cluster }}
+        namespace: {{ .Release.Namespace }}
+      for: 5m
+      annotations:
+        summary: "High delete times on Redis"
+        description: "The time it takes for redis to delete values from a set is over 1s"
+        dashboard: {{ .Values.metrics.dashboard_url }}
+        runbook_url: "https://radixdlt.atlassian.net/wiki/spaces/DT/pages/2563932288/Runbooks"
+    - alert: HighRedisPublishTime
+      expr: 'signaling_server_redis_get_time{namespace="{{ .Release.Namespace }}"} > 1000'
+      labels:
+        severity: warning
+        env: {{ .Values.metrics.alert_labels.env }}
+        tier: application
+        application: signaling-server
+        cluster: {{ .Values.metrics.alert_labels.cluster }}
+        namespace: {{ .Release.Namespace }}
+      for: 5m
+      annotations:
+        summary: "High publish times on Redis"
+        description: "The time it takes for redis to publish to a data channel is over 1s"
+        dashboard: {{ .Values.metrics.dashboard_url }}
+        runbook_url: "https://radixdlt.atlassian.net/wiki/spaces/DT/pages/2563932288/Runbooks"
+    - alert: HighEventLoopLag
+      expr: 'nodejs_eventloop_lag_p99_seconds{namespace="{{ .Release.Namespace }}"} > 0.5'
+      labels:
+        severity: warning
+        env: {{ .Values.metrics.alert_labels.env }}
+        tier: application
+        application: signaling-server
+        cluster: {{ .Values.metrics.alert_labels.cluster }}
+        namespace: {{ .Release.Namespace }}
+      for: 5m
+      annotations:
+        summary: "High event loop lag"
+        description: "The NodeJS event loop lag is over 500 ms"
+        dashboard: {{ .Values.metrics.dashboard_url }}
+        runbook_url: "https://radixdlt.atlassian.net/wiki/spaces/DT/pages/2563932288/Runbooks"
+{{- end }}
