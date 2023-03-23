@@ -9,7 +9,7 @@ spec:
   groups:
   - name: TURN
     rules:
-    - alert: NoTURUMetricsAvailable
+    - alert: NoTURNMetricsAvailable
       expr: absent(process_start_time_seconds{job="turn-server-metrics"})
       labels:
         severity: critical
