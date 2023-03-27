@@ -98,6 +98,16 @@ jobs:
           push: true
           context: ./
 
+      - name: Check Tag
+        if: ( github.event_name == 'release'&& github.event.release.prerelease )
+        id: check-tag
+        run: |
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/v[0-9]+\.*-rc-v1\.* ]]; then
+              echo "tag_env=kisharnet" >> $GITHUB_OUTPUT
+          elif [[ ${{ github.event.ref }} =~ ^refs/tags/v[0-9]+\.*-rc-v2\.* ]]; then
+              echo "tag_env=ansharnet" >> $GITHUB_OUTPUT
+          fi
+
   deploy_dev:
     if:  github.ref == 'refs/heads/develop'
     uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
@@ -116,6 +126,8 @@ jobs:
       helmfile_extra_vars: >-
         ci.tag=${{ needs.build.outputs.tag }},
         ci.environment=dev
+
+
 
   deploy_betanet:
     if:  github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' 
@@ -137,7 +149,7 @@ jobs:
         ci.environment=betanet
 
   deploy_kisharnet:
-    if: ( github.event_name == 'release' && github.event.release.prerelease )    
+    if: ( github.event_name == 'release' && github.event.release.prerelease && steps.check-tag.outputs.tag_env == 'kisharnet')    
     uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
     needs:
       - push
@@ -154,14 +166,34 @@ jobs:
       helmfile_extra_vars: >-
         ci.tag=${{ needs.build.outputs.tag }},
         ci.environment=kisharnet
-
-  deploy_mainnet:
-    if: ( github.event_name == 'release' && !github.event.release.prerelease )    
+  
+  deploy_ansharnet:
+    if: ( github.event_name == 'release' && github.event.release.prerelease && steps.check-tag.outputs.tag_env == 'ansharnet')    
     uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
     needs:
       - push
       - build
     with:
+      app_name: signaling-server
+      step_name: deploy-ansharnet
+      env_name: ansharnet
+      namespace: signaling-server-ansharnet
+      create_subns: false
+      aws_region: eu-west-2
+      role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-ansharnet-deployer
+      eks_cluster: rtlj-prod
+      helmfile_extra_vars: >-
+        ci.tag=${{ needs.build.outputs.tag }},
+        ci.environment=ansharnet
+
+  deploy_mainnet:
+    if: ( github.event_name == 'release' && !github.event.release.prerelease }})    
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
+    needs:
+      - push
+      - build
+    with:
+      environment: mainnet
       app_name: signaling-server
       step_name: deploy-mainnet
       env_name: mainnet

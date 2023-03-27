@@ -1,0 +1,34 @@
+ingress:
+  enabled: true
+  hosts:
+    - host: signaling-server-ansharnet.radixdlt.com
+      paths:
+      - path: /
+        backend:
+          serviceName: signaling-server
+          servicePort: 4000
+  tls:
+    - hosts:
+        - signaling-server-ansharnet.radixdlt.com
+
+metrics:
+  alert_labels:
+    env: ansharnet
+    cluster: rtlj-prod
+
+redis:
+  pub:
+    host: signaling-server-ansharnet-cache.7ffct2.ng.0001.euw2.cache.amazonaws.com
+  sub:
+    host: signaling-server-ansharnet-cache-ro.7ffct2.ng.0001.euw2.cache.amazonaws.com
+  port: 6379
+  password:
+
+alertmanager:
+  env: "ansharnet"
+  nameOverride: "webrtc-amcfg"
+  slackConfig:
+    channel: "feed--alerts-rcnet-web-rtc"
+  secrets:
+    region: eu-west-2
+    name: "rtlj-prod/eks/signaling-server/ansharnet/alertmanager-integration-keys"
