@@ -1,0 +1,34 @@
+ingress:
+  enabled: true
+  hosts:
+    - host: signaling-server-mainnet.radixdlt.com
+      paths:
+      - path: /
+        backend:
+          serviceName: signaling-server
+          servicePort: 4000
+  tls:
+    - hosts:
+        - signaling-server-mainnet.radixdlt.com
+
+metrics:
+  alert_labels:
+    env: mainnet
+    cluster: rtlj-prod
+
+redis:
+  pub:
+    host: signaling-server-mainnet-cache.caw5cd.ng.0001.euw2.cache.amazonaws.com
+  sub:
+    host: signaling-server-mainnet-cache-ro.caw5cd.ng.0001.euw2.cache.amazonaws.com
+  port: 6379
+  password:
+
+alertmanager:
+  env: "prod"
+  nameOverride: "webrtc-amcfg"
+  slackConfig:
+    channel: "feed--alerts-mainnet-web-rtc"
+  secrets:
+    region: eu-west-2
+    name: "rtlj-prod/eks/signaling-server/mainnet/alertmanager-integration-keys"
