@@ -192,7 +192,7 @@ jobs:
         ci.environment=ansharnet
 
   deploy_mainnet:
-    if: ( github.event_name == 'release' && !github.event.release.prerelease }})    
+    if: ( github.event_name == 'release' && !github.event.release.prerelease )    
     uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
     needs:
       - push
