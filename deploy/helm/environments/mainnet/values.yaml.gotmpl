@@ -1,7 +1,7 @@
 ingress:
   enabled: true
   hosts:
-    - host: signaling-server-kisharnet.radixdlt.com
+    - host: signaling-server-mainnet.radixdlt.com
       paths:
       - path: /
         backend:
@@ -9,7 +9,7 @@ ingress:
           servicePort: 4000
   tls:
     - hosts:
-        - signaling-server-kisharnet.radixdlt.com
+        - signaling-server-mainnet.radixdlt.com
 
 metrics:
   alert_labels:
