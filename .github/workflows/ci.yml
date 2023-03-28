@@ -165,7 +165,7 @@ jobs:
       namespace: signaling-server-kisharnet
       create_subns: false
       aws_region: eu-west-2
-      role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-kisharnet-deployer
+      role_to_assume: arn:aws:iam::821496737932:role/gh-signaling-server-kisharnet-deployer
       eks_cluster: rtlj-prod
       helmfile_extra_vars: >-
         ci.tag=${{ needs.build.outputs.tag }},
@@ -185,7 +185,7 @@ jobs:
       namespace: signaling-server-ansharnet
       create_subns: false
       aws_region: eu-west-2
-      role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-ansharnet-deployer
+      role_to_assume: arn:aws:iam::821496737932:role/gh-signaling-server-ansharnet-deployer
       eks_cluster: rtlj-prod
       helmfile_extra_vars: >-
         ci.tag=${{ needs.build.outputs.tag }},
@@ -205,7 +205,7 @@ jobs:
       namespace: signaling-server-mainnet
       create_subns: false
       aws_region: eu-west-2
-      role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-mainnet-deployer
+      role_to_assume: arn:aws:iam::821496737932:role/gh-signaling-server-mainnet-deployer
       eks_cluster: rtlj-prod
       helmfile_extra_vars: >-
         ci.tag=${{ needs.build.outputs.tag }},
