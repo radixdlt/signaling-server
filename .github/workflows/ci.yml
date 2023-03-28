@@ -12,7 +12,7 @@ on:
       - main
       - develop
   release:
-    types: [prereleased, released]
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -98,15 +98,18 @@ jobs:
           push: true
           context: ./
 
-      - name: Check Tag
-        if: ( github.event_name == 'release'&& github.event.release.prerelease )
-        id: check-tag
-        run: |
-          if [[ ${{ github.event.ref }} =~ ^refs/tags/v[0-9]+\.*-rc-v1\.* ]]; then
-              echo "tag_env=kisharnet" >> $GITHUB_OUTPUT
-          elif [[ ${{ github.event.ref }} =~ ^refs/tags/v[0-9]+\.*-rc-v2\.* ]]; then
-              echo "tag_env=ansharnet" >> $GITHUB_OUTPUT
-          fi
+  check-tag:
+    if: ( github.event_name == 'release'&& github.event.release.prerelease )
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check tag convention
+      id: check-tag
+      run: |
+        if [[ ${{ github.event.ref }} =~ refs/tags/.*-rc-v1 ]]; then
+            echo "tag_env=kisharnet" >> $GITHUB_OUTPUT
+        elif [[ ${{ github.event.ref }} =~ refs/tags/.*-rc-v2 ]]; then
+            echo "tag_env=ansharnet" >> $GITHUB_OUTPUT
+        fi
 
   deploy_dev:
     if:  github.ref == 'refs/heads/develop'
@@ -149,11 +152,12 @@ jobs:
         ci.environment=betanet
 
   deploy_kisharnet:
-    if: ( github.event_name == 'release' && github.event.release.prerelease && steps.check-tag.outputs.tag_env == 'kisharnet')    
+    if: ( github.event_name == 'release' && github.event.release.prerelease && needs.check-tag.outputs.tag_env == 'kisharnet')    
     uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
     needs:
       - push
       - build
+      - check-tag
     with:
       app_name: signaling-server
       step_name: deploy-kisharnet
@@ -168,11 +172,12 @@ jobs:
         ci.environment=kisharnet
   
   deploy_ansharnet:
-    if: ( github.event_name == 'release' && github.event.release.prerelease && steps.check-tag.outputs.tag_env == 'ansharnet')    
+    if: ( github.event_name == 'release' && github.event.release.prerelease && needs.check-tag.outputs.tag_env == 'ansharnet')    
     uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
     needs:
       - push
       - build
+      - check-tag
     with:
       app_name: signaling-server
       step_name: deploy-ansharnet
