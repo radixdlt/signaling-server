@@ -160,6 +160,7 @@ jobs:
       - check-tag
     with:
       app_name: signaling-server
+      environment: kisharnet
       step_name: deploy-kisharnet
       env_name: kisharnet
       namespace: signaling-server-kisharnet
@@ -180,6 +181,7 @@ jobs:
       - check-tag
     with:
       app_name: signaling-server
+      environment: ansharnet
       step_name: deploy-ansharnet
       env_name: ansharnet
       namespace: signaling-server-ansharnet
