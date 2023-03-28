@@ -99,7 +99,7 @@ jobs:
           context: ./
 
   check-tag:
-    if: ( github.event_name == 'release'&& github.event.release.prerelease )
+    if: ( github.event_name == 'release' && github.event.release.prerelease )
     runs-on: ubuntu-latest
     steps:
     - name: Check tag convention
