@@ -12,7 +12,7 @@ on:
       - main
       - develop
   release:
-    types: [released, prereleased, published]
+    types: [published]
   workflow_dispatch:
 
 jobs:
