@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
       - uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'release'
         with:
           fetch-depth: 0
       - name: Setup tags for docker image
