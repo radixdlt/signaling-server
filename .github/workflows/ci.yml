@@ -33,14 +33,14 @@ jobs:
       - name: Setup tags for docker image
         id: setup_tags
         run: |
-        if [[ ${{ github.event_name }} != 'release' ]]; then
-          GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD | sed 's/\//-/g')
-          GIT_COMMIT=$(git log -1 --format=%h )
-          
-          DOCKER_TAG=${GIT_BRANCH}-${GIT_COMMIT}
-        else
-          DOCKER_TAG=${{ github.event.release.tag_name }}
-        fi
+          if [[ ${{ github.event_name }} != 'release' ]]; then
+            GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD | sed 's/\//-/g')
+            GIT_COMMIT=$(git log -1 --format=%h )
+            
+            DOCKER_TAG=${GIT_BRANCH}-${GIT_COMMIT}
+          else
+            DOCKER_TAG=${{ github.event.release.tag_name }}
+          fi
           echo "DOCKER_TAG $DOCKER_TAG"
           echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
           echo "::set-output name=tag::$DOCKER_TAG"
