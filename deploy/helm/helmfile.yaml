@@ -22,6 +22,7 @@ releases:
 {{ $SIG_SRV_IMAGE_TAG := .StateValues.ci.tag }}
 {{ $ENVIRONMENT_NAME := .Environment.Name }}
 {{ $INSTALL_LOCAL_REDIS := eq $ENVIRONMENT_NAME "pr" }}
+{{ $INSTALL_TURN_SERVER := ne $ENVIRONMENT_NAME "pr" }}
 
   - name: redis
     namespace: {{ $SIG_SRV_NS }}
@@ -55,11 +56,14 @@ releases:
            enabled: true
            additionalLabels:
              release: prometheus-operator
+
   - name: turn-server
+    installed: {{ $INSTALL_TURN_SERVER }}
     namespace: {{ $SIG_SRV_NS }}
     chart: ./turn-server
     values:
       - environments/{{ .Environment.Name }}/turn-server-values.yaml.gotmpl
+
   - name: signaling-server
     namespace: {{ $SIG_SRV_NS }}
     chart: ./signaling-server
