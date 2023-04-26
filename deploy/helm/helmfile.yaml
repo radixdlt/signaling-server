@@ -16,7 +16,6 @@ environments:
   default: {}
   dev: {}
   pr: {}
-  betanet: {}
 releases:
 {{ $SIG_SRV_NS := .Namespace }}
 {{ $SIG_SRV_IMAGE_TAG := .StateValues.ci.tag }}
