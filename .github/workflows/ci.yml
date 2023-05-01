@@ -123,7 +123,7 @@ jobs:
 
   deploy_pull_request:
     if: ${{ github.event_name == 'pull_request' }}
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@DO-1269-wait-for-deployments
     needs:
       - push
       - build
@@ -134,6 +134,7 @@ jobs:
       hierarchical_namespace: signaling-server-ci-pr
       namespace: signaling-server-pr-${{ github.event.number }}
       create_subns: true
+      restart_pods: false
       aws_region: eu-west-2
       role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-pr-deployer
       eks_cluster: rdx-works-main-dev
