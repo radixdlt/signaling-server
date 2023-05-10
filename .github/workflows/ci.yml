@@ -43,7 +43,7 @@ jobs:
           fi
           echo "DOCKER_TAG $DOCKER_TAG"
           echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
-          echo "::set-output name=tag::$DOCKER_TAG"
+          echo "tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
       - name: Use Node.js
         uses: actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561
         with:
@@ -53,7 +53,7 @@ jobs:
       - name: Get npm cache directory
         id: npm-cache-dir
         run: |
-          echo "::set-output name=dir::$(npm config get cache)"
+          echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
 
       - name: Cache Node.js modules
         uses: actions/cache@b8204782bbb5f872091ecc5eb9cb7d004e35b1fa
