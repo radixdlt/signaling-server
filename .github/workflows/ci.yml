@@ -81,7 +81,7 @@ jobs:
 
   push:
     name: (SPA) Docker
-    uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/docker-build.yml@v1.0.0
+    uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/docker-build.yml@main
     needs: build
     with:
       runs_on: ubuntu-latest
@@ -91,6 +91,7 @@ jobs:
       tag: ${{ needs.build.outputs.tag }}
       dockerfile: "./Dockerfile"
       context: ./
+      platforms: "linux/amd64"
     secrets:
       workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDP }}
       service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
