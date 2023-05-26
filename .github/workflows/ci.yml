@@ -80,27 +80,20 @@ jobs:
           retention-days: 1 # The minimum value possible.
 
   push:
-    runs-on: ubuntu-latest
+    name: (SPA) Docker
+    uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/docker-build.yml@v1.0.0
     needs: build
-    steps:
-      - uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
-        with:
-          fetch-depth: 0
-      - name: Login to GCR
-        uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7
-        with:
-          registry: docker.io
-          username: _json_key
-          password: ${{ secrets.GCR_EU_DEV_JSON_KEY }}
-
-      - name: Docker build and push
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-        with:
-          file: ./Dockerfile
-          tags: |
-            docker.io/radixdlt/signaling-server:${{ needs.build.outputs.tag }}
-          push: true
-          context: ./
+    with:
+      runs_on: ubuntu-latest
+      image_registry: "docker.io"
+      image_organization: "radixdlt"
+      image_name: "signaling-server"
+      tag: ${{ needs.build.outputs.tag }}
+      dockerfile: "./Dockerfile"
+      context: ./
+    secrets:
+      workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDP }}
+      service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
   deploy_dev:
     if:  github.ref == 'refs/heads/develop'
