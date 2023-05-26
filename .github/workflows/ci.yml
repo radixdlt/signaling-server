@@ -89,7 +89,7 @@ jobs:
       - name: Login to GCR
         uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7
         with:
-          registry: eu.gcr.io
+          registry: docker.io
           username: _json_key
           password: ${{ secrets.GCR_EU_DEV_JSON_KEY }}
 
@@ -98,7 +98,7 @@ jobs:
         with:
           file: ./Dockerfile
           tags: |
-            eu.gcr.io/dev-container-repo/signaling-server:${{ needs.build.outputs.tag }}
+            docker.io/radixdlt/signaling-server:${{ needs.build.outputs.tag }}
           push: true
           context: ./
 

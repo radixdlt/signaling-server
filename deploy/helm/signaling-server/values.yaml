@@ -14,17 +14,17 @@ redis:
 docker:
   secrets:
     region: eu-west-1
-    name: eu.gcr.io/dev-container-repo
+    name: docker.io/radixdlt
 
 replicaCount: 2
 
 image:
-  repository: eu.gcr.io/dev-container-repo/signaling-server
+  repository: docker.io/radixdlt/signaling-server
   pullPolicy: IfNotPresent
   tag: ''
 
 imagePullSecrets:
-  - name: docker-eu-gcr-dev
+  - name: docker-hub-dev
 
 nameOverride: ''
 fullnameOverride: ''
