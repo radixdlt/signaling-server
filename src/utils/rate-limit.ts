@@ -6,12 +6,12 @@ const RateLimit = (limit: number, interval: number) => {
   const last = Symbol() as unknown as string
   const count = Symbol() as unknown as string
   setInterval(() => ++now, interval)
-  return (ws: uWs.WebSocket) => {
-    if (ws[last] != now) {
-      ws[last] = now
-      ws[count] = 1
+  return (ws: uWs.WebSocket<any>) => {
+    if (ws.getUserData()[last] != now) {
+      ws.getUserData()[last] = now
+      ws.getUserData()[count] = 1
     } else {
-      return ++ws[count] > limit
+      return ++ws.getUserData()[count] > limit
     }
   }
 }

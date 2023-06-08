@@ -28,6 +28,13 @@ import {
   RemoteData,
 } from './messages/_types'
 
+type Data = {
+  id: string
+  connectionId: string
+  source: string
+  targetClient: string
+}
+
 const collectDefaultMetrics = prometheusClient.collectDefaultMetrics
 collectDefaultMetrics()
 
@@ -83,7 +90,7 @@ const server = async () => {
     return !!(await redis.publisher.sIsMember(key, value))
   }
 
-  const subscribe = async (ws: uWs.WebSocket, dataChanel: string) => {
+  const subscribe = async (ws: uWs.WebSocket<any>, dataChanel: string) => {
     const t0 = performance.now()
     await redis.subscriber.subscribe(dataChanel, (raw) => {
       parseJSON<
@@ -100,7 +107,7 @@ const server = async () => {
     redisSubscribeTime.set(t1 - t0)
   }
 
-  const send = (ws: uWs.WebSocket, message: MessageTypes) => {
+  const send = (ws: uWs.WebSocket<any>, message: MessageTypes) => {
     try {
       log.trace({
         event: 'SendWSMessage',
@@ -121,6 +128,9 @@ const server = async () => {
   uWs
     .App()
     .ws('/*', {
+      sendPingsAutomatically: true,
+      idleTimeout: 0,
+      maxLifetime: 0,
       upgrade: (res, req, context) => {
         res.upgrade(
           {
@@ -133,11 +143,12 @@ const server = async () => {
           context
         )
       },
-      open: async (ws) => {
+      open: async (ws: uWs.WebSocket<Data>) => {
         try {
+          console.log(ws)
           ++connections
           connectedClientsGauge.set(connections)
-          const url: URL = ws.url
+          const url: URL = (ws as any).url
           const connectionId = url.pathname.slice(1)
           const target = url.searchParams.get('target')
           const source = url.searchParams.get('source')
@@ -162,15 +173,15 @@ const server = async () => {
           }
 
           const websocketId = randomUUID()
-          ws.id = websocketId
-          ws.connectionId = connectionId
-          ws.source = source
-          ws.targetClient = `${ws.connectionId}:${target}`
+          ws.getUserData().id = websocketId
+          ws.getUserData().connectionId = connectionId
+          ws.getUserData().source = source
+          ws.getUserData().targetClient = `${connectionId}:${target}`
 
           const [, , targetWebsocketIds] = await Promise.all([
             subscribe(ws, websocketId),
             setData(`${connectionId}:${source}`, websocketId),
-            getTargetWebsocketIds(ws.targetClient),
+            getTargetWebsocketIds(ws.getUserData().targetClient),
           ])
 
           log.trace({
@@ -227,11 +238,13 @@ const server = async () => {
             })
           }
 
-          if (await isMember(ws.targetClient, parsed.targetClientId)) {
+          if (
+            await isMember(ws.getUserData().targetClient, parsed.targetClientId)
+          ) {
             await publish(parsed.targetClientId, {
               info: 'remoteData',
               data: parsed,
-              remoteClientId: ws.id,
+              remoteClientId: ws.getUserData().id,
               requestId: parsed.requestId,
             })
           } else {
@@ -253,24 +266,27 @@ const server = async () => {
         --connections
         connectedClientsGauge.set(connections)
         try {
-          if (ws.id) {
+          if (ws.getUserData().id) {
             const targetWebsocketIds = await getTargetWebsocketIds(
-              ws.targetClient
+              ws.getUserData().targetClient
             )
             if (targetWebsocketIds && targetWebsocketIds.length) {
               await Promise.all(
                 targetWebsocketIds.map((targetWebsocketId) =>
                   publish(targetWebsocketId, {
                     info: 'remoteClientDisconnected',
-                    remoteClientId: ws.id,
+                    remoteClientId: ws.getUserData().id,
                   })
                 )
               )
             }
 
             await Promise.all([
-              redis.subscriber.unsubscribe(ws.id),
-              removeData(`${ws.connectionId}:${ws.source}`, ws.id),
+              redis.subscriber.unsubscribe(ws.getUserData().id),
+              removeData(
+                `${ws.getUserData().connectionId}:${ws.getUserData().source}`,
+                ws.getUserData().id
+              ),
             ])
           }
 
