@@ -89,7 +89,7 @@ jobs:
 
       - name: Run e2e tests
         run: |
-          SIGNALING_SERVER=${SIGNALING_SERVER:-signaling-server-dev.rdx-works-main.extratools.works}
+          SIGNALING_SERVER=${SIGNALING_SERVER:-signaling-server-pr-88.rdx-works-main.extratools.works}
 
           echo "Starting e2e tests on $SIGNALING_SERVER"
 
