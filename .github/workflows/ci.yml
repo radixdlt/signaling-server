@@ -63,6 +63,11 @@ jobs:
 
   snyk-sbom:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      pull-requests: read
+      contents: read
+      deployments: write
     needs:
       - snyk-scan-deps-licences
       - snyk-scan-code
