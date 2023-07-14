@@ -182,10 +182,12 @@ jobs:
         with:
           always-auth: true
           node-version: 16.x
+
       - name: Get npm cache directory
         id: npm-cache-dir
         run: |
           echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
+
       - name: Cache Node.js modules
         uses: actions/cache@b8204782bbb5f872091ecc5eb9cb7d004e35b1fa
         id: npm-cache # use this to check for `cache-hit` ==> if: steps.npm-cache.outputs.cache-hit != 'true'
@@ -194,12 +196,16 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: yarn install
+
       - name: Build
         run: yarn run build
+
       - name: Lint
         run: yarn run lint
+
       - uses: actions/upload-artifact@82c141cc518b40d92cc801eee768e7aafc9c2fa2
         with:
           name: build.props
