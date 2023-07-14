@@ -18,6 +18,11 @@ on:
 jobs:
   snyk-scan-deps-licences:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      pull-requests: read
+      contents: read
+      deployments: write
     steps:
       - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
       - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
@@ -35,6 +40,11 @@ jobs:
 
   snyk-scan-code:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      pull-requests: read
+      contents: read
+      deployments: write
     steps:
       - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
       - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
@@ -86,6 +96,11 @@ jobs:
     needs:
       - build
       - push
+    permissions:
+      id-token: write
+      pull-requests: read
+      contents: read
+      deployments: write
     steps:
       - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
       - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
@@ -108,6 +123,11 @@ jobs:
     needs:
       - build
       - push
+    permissions:
+      id-token: write
+      pull-requests: read
+      contents: read
+      deployments: write
     steps:
       - uses: radixdlt/public-iac-resuable-artifacts/snyk-container-monitor@main
         with:
