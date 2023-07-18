@@ -61,6 +61,38 @@ jobs:
           args: --all-projects --org=${{ env.SNYK_PROJECTS_ORG_ID }} --severity-threshold=high
           command: code test
 
+  snyk-sbom-test:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      pull-requests: read
+      contents: read
+      deployments: write
+    needs:
+      - snyk-scan-deps-licences
+      - snyk-scan-code
+    steps:
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
+      - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
+          app_name: 'signaling-server'
+          step_name: 'snyk-sbom'
+          secret_prefix: 'SNYK'
+          secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
+          parse_json: true
+      - name: Generate SBOM # check SBOM can be generated but nothing is done with it
+        uses: snyk/actions/node@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
+        with:
+          args: --all-projects --org=${{ env.SNYK_PROJECTS_ORG_ID }} --format=cyclonedx1.4+json --json-file-output sbom.json
+          command: sbom
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom.json
+          path: |
+            sbom.json
+
   snyk-sbom:
     runs-on: ubuntu-latest
     permissions:
