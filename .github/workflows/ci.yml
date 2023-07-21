@@ -227,6 +227,7 @@ jobs:
       platforms: "linux/amd64"
       scan_image: true
       continue_on_scan_image_finding: true
+      with_sbom: true
     secrets:
       workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDP }}
       service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
