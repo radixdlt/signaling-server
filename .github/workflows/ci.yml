@@ -212,7 +212,6 @@ jobs:
           path: artifacts
           retention-days: 1 # The minimum value possible.
 
-
   push:
     name: (SPA) Docker
     uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/docker-build.yml@sbom-attest
