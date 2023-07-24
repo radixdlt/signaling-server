@@ -212,7 +212,7 @@ jobs:
 
   push:
     name: (SPA) Docker
-    uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/docker-build.yml@DO-1653-sbom-attest
+    uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/docker-build.yml@main
     needs: build
     with:
       runs_on: ubuntu-latest
