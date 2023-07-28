@@ -23,7 +23,7 @@ spec:
         summary: "High set times on Redis"
         description: "The time it takes for redis to set values to a set is over 1s"
         dashboard: {{ .Values.metrics.dashboard_url }}
-        runbook_url: "https://radixdlt.atlassian.net/wiki/spaces/DT/pages/2563932288/Runbooks"
+        runbook_url: "https://runbooks.extratools.works"
     - alert: HighRedisGetTime
       expr: 'signaling_server_redis_get_time{namespace="{{ .Release.Namespace }}"} > 1000'
       labels:
@@ -38,7 +38,7 @@ spec:
         summary: "High get times on Redis"
         description: "The time it takes for redis to get values from a set is over 1s"
         dashboard: {{ .Values.metrics.dashboard_url }}
-        runbook_url: "https://radixdlt.atlassian.net/wiki/spaces/DT/pages/2563932288/Runbooks"
+        runbook_url: "https://runbooks.extratools.works"
     - alert: HighRedisDeleteTime
       expr: 'signaling_server_redis_delete_time{namespace="{{ .Release.Namespace }}"} > 1000'
       labels:
@@ -53,7 +53,7 @@ spec:
         summary: "High delete times on Redis"
         description: "The time it takes for redis to delete values from a set is over 1s"
         dashboard: {{ .Values.metrics.dashboard_url }}
-        runbook_url: "https://radixdlt.atlassian.net/wiki/spaces/DT/pages/2563932288/Runbooks"
+        runbook_url: "https://runbooks.extratools.works"
     - alert: HighRedisPublishTime
       expr: 'signaling_server_redis_get_time{namespace="{{ .Release.Namespace }}"} > 1000'
       labels:
@@ -68,7 +68,7 @@ spec:
         summary: "High publish times on Redis"
         description: "The time it takes for redis to publish to a data channel is over 1s"
         dashboard: {{ .Values.metrics.dashboard_url }}
-        runbook_url: "https://radixdlt.atlassian.net/wiki/spaces/DT/pages/2563932288/Runbooks"
+        runbook_url: "https://runbooks.extratools.works"
     - alert: HighEventLoopLag
       expr: 'nodejs_eventloop_lag_p99_seconds{namespace="{{ .Release.Namespace }}"} > 0.5'
       labels:
@@ -83,5 +83,5 @@ spec:
         summary: "High event loop lag"
         description: "The NodeJS event loop lag is over 500 ms"
         dashboard: {{ .Values.metrics.dashboard_url }}
-        runbook_url: "https://radixdlt.atlassian.net/wiki/spaces/DT/pages/2563932288/Runbooks"
+        runbook_url: "https://runbooks.extratools.works"
 {{- end }}

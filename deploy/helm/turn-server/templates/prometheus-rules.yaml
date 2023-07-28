@@ -23,5 +23,5 @@ spec:
         summary: "No TURN metrics available"
         description: "Metrics are not being collected for the TURN server"
         dashboard: {{ .Values.metrics.dashboard_url }}
-        runbook_url: "https://radixdlt.atlassian.net/wiki/spaces/DT/pages/2563932288/Runbooks"
+        runbook_url: "https://runbooks.extratools.works"
 {{- end }}
