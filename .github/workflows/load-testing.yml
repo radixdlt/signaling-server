@@ -19,7 +19,7 @@ on:
       signalingServer:
         required: false
         description: 'The signaling server hostname to use'
-        default: "signaling-server-dev.rdx-works-main.extratools.works"
+        default: "signaling-server-pr-88.rdx-works-main.extratools.works"
 
 jobs:
   locust:
@@ -65,7 +65,7 @@ jobs:
           SPAWN_RATE=${SPAWN_RATE:-500}
           USER_COUNT=${USER_COUNT:-70000}
           TOTAL_TIME=${TOTAL_TIME:-600}
-          SIGNALING_SERVER=${SIGNALING_SERVER:-signaling-server-dev.rdx-works-main.extratools.works}
+          SIGNALING_SERVER=${SIGNALING_SERVER:-signaling-server-pr-88.rdx-works-main.extratools.works}
 
           set -euo pipefail
 
