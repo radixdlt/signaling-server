@@ -330,3 +330,23 @@ jobs:
       helmfile_extra_vars: >-
         ci.tag=${{ github.event.release.tag_name }},
         ci.environment=ansharnet
+
+  deploy_zabanet:
+    if: ${{ github.event_name == 'release' && github.event.release.prerelease == true && contains(github.ref, 'rc-v3') }}
+    needs:
+      - build
+      - push
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
+    with:
+      app_name: signaling-server
+      environment: zabanet
+      step_name: deploy-zabanet
+      env_name: zabanet
+      namespace: signaling-server-zabanet
+      create_subns: false
+      aws_region: eu-west-2
+      role_to_assume: arn:aws:iam::821496737932:role/gh-signaling-server-zabanet-deployer
+      eks_cluster: rtlj-prod
+      helmfile_extra_vars: >-
+        ci.tag=${{ github.event.release.tag_name }},
+        ci.environment=zabanet

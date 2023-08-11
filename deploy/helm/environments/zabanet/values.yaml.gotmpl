@@ -1,0 +1,36 @@
+ingress:
+  enabled: true
+  hosts:
+    - host: signaling-server-zabanet.radixdlt.com
+      paths:
+      - path: /
+        backend:
+          serviceName: signaling-server
+          servicePort: 4000
+  tls:
+    - hosts:
+        - signaling-server-zabanet.radixdlt.com
+
+metrics:
+  alert_labels:
+    env: zabanet
+    cluster: rtlj-prod
+
+redis:
+  pub:
+    host: signaling-server-zabanet-cache.caw5cd.ng.0001.euw2.cache.amazonaws.com
+  sub:
+    host: signaling-server-zabanet-cache-ro.caw5cd.ng.0001.euw2.cache.amazonaws.com
+  port: 6379
+  password:
+
+alertmanager:
+  env: "zabanet"
+  nameOverride: "webrtc-amcfg"
+  slackConfig:
+    channel: "feed--alerts-rcnet-web-rtc"
+  secrets:
+    region: eu-west-2
+    name: "rtlj-prod/eks/signaling-server/zabanet/alertmanager-integration-keys"
+
+nodeSelector:
