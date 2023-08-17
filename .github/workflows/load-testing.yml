@@ -19,7 +19,7 @@ on:
       signalingServer:
         required: false
         description: 'The signaling server hostname to use'
-        default: "signaling-server-dev.rdx-works-main.extratools.works"
+        default: "signaling-server-pr-88.rdx-works-main.extratools.works"
 
 jobs:
   locust:
@@ -65,7 +65,7 @@ jobs:
           SPAWN_RATE=${SPAWN_RATE:-500}
           USER_COUNT=${USER_COUNT:-70000}
           TOTAL_TIME=${TOTAL_TIME:-600}
-          SIGNALING_SERVER=${SIGNALING_SERVER:-signaling-server-dev.rdx-works-main.extratools.works}
+          SIGNALING_SERVER=${SIGNALING_SERVER:-signaling-server-pr-88.rdx-works-main.extratools.works}
 
           set -euo pipefail
 
@@ -77,6 +77,8 @@ jobs:
             -d "host=wss://$SIGNALING_SERVER" \
             -d "spawn_rate=$SPAWN_RATE" \
             -d "user_count=$USER_COUNT"
+
+          echo "Waiting $TOTAL_TIME seconds for the load test to complete"
 
           sleep $TOTAL_TIME
         env:
@@ -91,13 +93,11 @@ jobs:
         run: |
           SIGNALING_SERVER=${SIGNALING_SERVER:-signaling-server-pr-88.rdx-works-main.extratools.works}
 
-          echo "Starting e2e tests on $SIGNALING_SERVER"
-
           eval `ssh-agent -s`
           ssh-add - <<< '${{ secrets.PRIVATE_SSH_KEY }}'
 
-          git clone -b develop --single-branch git@github.com:radixdlt/connector-extension.git e2e-tests
-          cd e2e-tests
+          git clone -b develop --single-branch git@github.com:radixdlt/connector-extension.git
+          cd connector-extension
 
           cat <<DOC > .env
           VITE_APP_SIGNALING_SERVER_BASE_URL=wss://$SIGNALING_SERVER
@@ -106,7 +106,12 @@ jobs:
 
           cat .env
 
-          make test
+          npm install
+
+          echo "Running connector-extension e2e tests on $SIGNALING_SERVER"
+
+          unset CI
+          npm run test
         env:
           SIGNALING_SERVER: ${{ inputs.signalingServer }}
 
