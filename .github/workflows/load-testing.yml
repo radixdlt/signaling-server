@@ -106,7 +106,8 @@ jobs:
 
           cat .env
 
-          make test
+          npm ci
+          npm run test
         env:
           SIGNALING_SERVER: ${{ inputs.signalingServer }}
 
