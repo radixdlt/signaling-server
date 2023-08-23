@@ -232,7 +232,7 @@ jobs:
 
   deploy_dev:
     if:  github.ref == 'refs/heads/develop'
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
     needs:
       - push
       - build
@@ -251,7 +251,7 @@ jobs:
 
   deploy_pull_request:
     if: ${{ github.event_name == 'pull_request' }}
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
     needs:
       - push
       - build
@@ -276,7 +276,7 @@ jobs:
     needs:
       - build
       - push    
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
     with:
       environment: mainnet
       app_name: signaling-server
@@ -296,7 +296,7 @@ jobs:
     needs:
       - build
       - push      
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
     with:
       app_name: signaling-server
       environment: kisharnet
@@ -316,7 +316,7 @@ jobs:
     needs:
       - build
       - push
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
     with:
       app_name: signaling-server
       environment: ansharnet
@@ -336,7 +336,7 @@ jobs:
     needs:
       - build
       - push
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.8.3
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
     with:
       app_name: signaling-server
       environment: zabanet
