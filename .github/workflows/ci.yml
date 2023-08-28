@@ -278,7 +278,7 @@ jobs:
       - push    
     uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
     with:
-      environment: mainnet
+      github_environment: mainnet
       app_name: signaling-server
       step_name: deploy-mainnet
       env_name: mainnet
@@ -299,7 +299,7 @@ jobs:
     uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
     with:
       app_name: signaling-server
-      environment: kisharnet
+      github_environment: kisharnet
       step_name: deploy-kisharnet
       env_name: kisharnet
       namespace: signaling-server-kisharnet
@@ -319,7 +319,7 @@ jobs:
     uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
     with:
       app_name: signaling-server
-      environment: ansharnet
+      github_environment: ansharnet
       step_name: deploy-ansharnet
       env_name: ansharnet
       namespace: signaling-server-ansharnet
@@ -339,7 +339,7 @@ jobs:
     uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
     with:
       app_name: signaling-server
-      environment: zabanet
+      github_environment: zabanet
       step_name: deploy-zabanet
       env_name: zabanet
       namespace: signaling-server-zabanet
