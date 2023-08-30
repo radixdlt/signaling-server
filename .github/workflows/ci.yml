@@ -63,11 +63,7 @@ jobs:
 
   snyk-sbom:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      pull-requests: read
-      contents: read
-      deployments: write
+    permissions: write-all
     needs:
       - snyk-scan-deps-licences
       - snyk-scan-code
@@ -95,7 +91,9 @@ jobs:
 
   snyk-monitor:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    if: >
+      ( github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') ) ||
+      ( ${{ github.event_name == 'release' && github.event.release.prerelease == false }} )
     needs:
       - build
       - push
@@ -122,7 +120,9 @@ jobs:
 
   snyk-container-monitor:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    if: >
+     ( github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') ) ||
+     ( ${{ github.event_name == 'release' && github.event.release.prerelease == false }} )
     needs:
       - build
       - push
