@@ -7,9 +7,16 @@ ingress:
         backend:
           serviceName: signaling-server
           servicePort: 4000
+    - host: signaling-server-rcnet.radixdlt.com
+      paths:
+      - path: /
+        backend:
+          serviceName: signaling-server
+          servicePort: 4000
   tls:
     - hosts:
         - signaling-server-ansharnet.radixdlt.com
+        - signaling-server-rcnet.radixdlt.com
 
 metrics:
   alert_labels:
