@@ -24,7 +24,7 @@ jobs:
       contents: read
       deployments: write
     steps:
-      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
       - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
           role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
@@ -46,7 +46,7 @@ jobs:
       contents: read
       deployments: write
     steps:
-      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
       - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
           role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
@@ -68,7 +68,7 @@ jobs:
       - snyk-scan-deps-licences
       - snyk-scan-code
     steps:
-      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
       - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
           role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
@@ -103,7 +103,7 @@ jobs:
       contents: read
       deployments: write
     steps:
-      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
       - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
           role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
@@ -152,12 +152,12 @@ jobs:
     outputs:
       tag: ${{ steps.setup_tags.outputs.tag}}
     steps:
-      - uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
         if: github.event_name == 'pull_request'
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-      - uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'release'
         with:
           fetch-depth: 0
@@ -176,7 +176,7 @@ jobs:
           echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
           echo "tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
       - name: Use Node.js
-        uses: actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561
+        uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
           always-auth: true
           node-version: 16.x
@@ -187,7 +187,7 @@ jobs:
           echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
 
       - name: Cache Node.js modules
-        uses: actions/cache@b8204782bbb5f872091ecc5eb9cb7d004e35b1fa
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
         id: npm-cache # use this to check for `cache-hit` ==> if: steps.npm-cache.outputs.cache-hit != 'true'
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
@@ -204,7 +204,7 @@ jobs:
       - name: Lint
         run: yarn run lint
 
-      - uses: actions/upload-artifact@82c141cc518b40d92cc801eee768e7aafc9c2fa2
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: build.props
           path: artifacts
