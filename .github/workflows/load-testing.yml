@@ -40,7 +40,7 @@ jobs:
           version: 2
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@811cf67cbe28fd16d5a320c029542d8a3ae178c0
+        uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
         with:
           role-to-assume: arn:aws:iam::308190735829:role/gh-signaling-server-load-testing-runner
           aws-region: eu-west-2
