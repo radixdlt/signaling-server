@@ -35,7 +35,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install AWS CLI
-        uses: unfor19/install-aws-cli-action@8a86d81a0f1393cff1f44c77010cb2707e8a1066
+        uses: unfor19/install-aws-cli-action@3c53dab4dd62b5d9d647f0ce9519285250a3c767
         with:
           version: 2
 
