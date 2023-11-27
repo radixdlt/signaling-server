@@ -232,7 +232,7 @@ jobs:
 
   deploy_dev:
     if:  github.ref == 'refs/heads/develop'
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.15.0
     needs:
       - push
       - build
@@ -251,7 +251,7 @@ jobs:
 
   deploy_pull_request:
     if: ${{ github.event_name == 'pull_request' }}
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.15.0
     needs:
       - push
       - build
@@ -276,7 +276,7 @@ jobs:
     needs:
       - build
       - push
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.15.0
     with:
       github_environment: prod
       app_name: signaling-server
@@ -296,7 +296,7 @@ jobs:
     needs:
       - build
       - push
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.13.0
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.15.0
     with:
       app_name: signaling-server
       github_environment: ansharnet
