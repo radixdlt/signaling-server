@@ -136,10 +136,8 @@ jobs:
         with:
           role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
           app_name: 'signaling-server'
-          step_name: 'snyk-container-monitor'
           dockerhub_secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/dockerhub-credentials'
           snyk_secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
-          parse_json: true
           snyk_org_id: ${{ secrets.SNYK_ORG_ID }}
           image: docker.io/radixdlt/signaling-server:${{ needs.build.outputs.tag }}
           target_ref: ${{ github.ref_name }}
@@ -232,7 +230,7 @@ jobs:
 
   deploy_dev:
     if:  github.ref == 'refs/heads/develop'
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@fix-aws-configure-action
     needs:
       - push
       - build
@@ -251,7 +249,7 @@ jobs:
 
   deploy_pull_request:
     if: ${{ github.event_name == 'pull_request' }}
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@v0.15.0
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@fix-aws-configure-action
     needs:
       - push
       - build
@@ -277,7 +275,7 @@ jobs:
     needs:
       - build
       - push
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@fix-aws-configure-action
     with:
       github_environment: prod
       app_name: signaling-server
@@ -297,7 +295,7 @@ jobs:
     needs:
       - build
       - push
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@fix-aws-configure-action
     with:
       app_name: signaling-server
       github_environment: ansharnet
