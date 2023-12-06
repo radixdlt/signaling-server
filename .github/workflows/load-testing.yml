@@ -35,7 +35,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install AWS CLI
-        uses: unfor19/install-aws-cli-action@8a86d81a0f1393cff1f44c77010cb2707e8a1066
+        uses: RDXWorks-actions/install-aws-cli-action@master
         with:
           version: 2
 
