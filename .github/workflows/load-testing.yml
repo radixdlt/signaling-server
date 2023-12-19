@@ -30,7 +30,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
+      - uses: RDXWorks-actions/checkout@main
         with:
           fetch-depth: 0
 
@@ -40,7 +40,7 @@ jobs:
           version: 2
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
+        uses: RDXWorks-actions/configure-aws-credentials@main
         with:
           role-to-assume: arn:aws:iam::308190735829:role/gh-signaling-server-load-testing-runner
           aws-region: eu-west-2
