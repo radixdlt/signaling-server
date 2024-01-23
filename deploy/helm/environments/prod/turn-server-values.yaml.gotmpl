@@ -5,3 +5,10 @@ service:
     tls: turn-tls.radixdlt.com
 
   tlsCertificate: arn:aws:acm:eu-west-2:821496737932:certificate/5f284ee0-3551-4ab9-bd95-c0dd79356c67
+
+resources:
+  limits:
+    memory: 512Mi
+  requests:
+    cpu: 0.5m
+    memory: 512Mi
