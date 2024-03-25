@@ -270,7 +270,6 @@ jobs:
         ci.prNumber=${{ github.event.number }},
         ci.environment=pr
 
-
   deploy_prod:
     if: ${{ github.event_name == 'release' && github.event.release.prerelease == false }}
     needs:
@@ -290,23 +289,3 @@ jobs:
       helmfile_extra_vars: >-
         ci.tag=${{ github.event.release.tag_name }},
         ci.environment=prod
-
-  deploy_ansharnet:
-    if: ${{ github.event_name == 'release' && github.event.release.prerelease == true && contains(github.ref, 'rc-v2') }}
-    needs:
-      - build
-      - push
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
-    with:
-      app_name: signaling-server
-      github_environment: ansharnet
-      step_name: deploy-ansharnet
-      env_name: ansharnet
-      namespace: signaling-server-ansharnet
-      create_subns: false
-      aws_region: eu-west-2
-      role_to_assume: arn:aws:iam::821496737932:role/gh-signaling-server-ansharnet-deployer
-      eks_cluster: rtlj-prod
-      helmfile_extra_vars: >-
-        ci.tag=${{ github.event.release.tag_name }},
-        ci.environment=ansharnet
