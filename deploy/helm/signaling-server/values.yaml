@@ -87,14 +87,9 @@ autoscaling:
   maxReplicas: 20
   targetCPUUtilizationPercentage: 60
 
-nodeSelector:
-  radixdlt.com/tier: 'signaling-server'
+nodeSelector: {}
 
-tolerations:
-  - key: 'signaling-server'
-    operator: 'Equal'
-    value: 'true'
-    effect: 'NoSchedule'
+tolerations: []
 
 affinity: {}
 
