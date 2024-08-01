@@ -6,6 +6,11 @@ service:
 
   tlsCertificate: arn:aws:acm:eu-west-2:821496737932:certificate/5f284ee0-3551-4ab9-bd95-c0dd79356c67
 
+metrics:
+  alert_labels:
+    env: prod
+    cluster: rtlj-prod
+
 resources:
   limits:
     memory: 512Mi
