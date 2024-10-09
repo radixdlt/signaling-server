@@ -1,7 +1,5 @@
 name: load-testing
 on:
-  schedule:
-    - cron: '10 0 * * MON'
   workflow_dispatch:
     inputs:
       totalTime:
