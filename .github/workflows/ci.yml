@@ -2,17 +2,7 @@ name: server
 
 on:
   push:
-    tags:
-      - 'v.*'
-    branches:
-      - main
-      - develop
-  pull_request:
-    branches:
-      - main
-      - develop
-  release:
-    types: [published]
+    
   workflow_dispatch:
 
 jobs:
@@ -61,231 +51,231 @@ jobs:
           args: --all-projects --org=${{ env.SNYK_PROJECTS_ORG_ID }} --severity-threshold=high
           command: code test
 
-  snyk-sbom:
-    runs-on: ubuntu-latest
-    permissions: write-all
-    needs:
-      - snyk-scan-deps-licences
-      - snyk-scan-code
-    steps:
-      - uses: RDXWorks-actions/checkout@main
-      - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
-        with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
-          app_name: 'signaling-server'
-          step_name: 'snyk-sbom'
-          secret_prefix: 'SNYK'
-          secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
-          parse_json: true
-      - name: Generate SBOM # check SBOM can be generated but nothing is done with it
-        uses: RDXWorks-actions/snyk-actions/node@master
-        with:
-          args: --all-projects --org=${{ env.SNYK_PROJECTS_ORG_ID }} --format=cyclonedx1.4+json --json-file-output sbom.json
-          command: sbom
-      - name: Upload SBOM
-        if: github.event_name == 'release'
-        uses: RDXWorks-actions/upload-release-assets@c94805dc72e4b20745f543da0f62eaee7722df7a
-        with:
-          files: sbom.json
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+  # snyk-sbom:
+  #   runs-on: ubuntu-latest
+  #   permissions: write-all
+  #   needs:
+  #     - snyk-scan-deps-licences
+  #     - snyk-scan-code
+  #   steps:
+  #     - uses: RDXWorks-actions/checkout@main
+  #     - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+  #       with:
+  #         role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
+  #         app_name: 'signaling-server'
+  #         step_name: 'snyk-sbom'
+  #         secret_prefix: 'SNYK'
+  #         secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
+  #         parse_json: true
+  #     - name: Generate SBOM # check SBOM can be generated but nothing is done with it
+  #       uses: RDXWorks-actions/snyk-actions/node@master
+  #       with:
+  #         args: --all-projects --org=${{ env.SNYK_PROJECTS_ORG_ID }} --format=cyclonedx1.4+json --json-file-output sbom.json
+  #         command: sbom
+  #     - name: Upload SBOM
+  #       if: github.event_name == 'release'
+  #       uses: RDXWorks-actions/upload-release-assets@c94805dc72e4b20745f543da0f62eaee7722df7a
+  #       with:
+  #         files: sbom.json
+  #         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-  snyk-monitor:
-    runs-on: ubuntu-latest
-    if: >
-      ( github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') ) ||
-      ( ${{ github.event_name == 'release' && github.event.release.prerelease == false }} )
-    needs:
-      - build
-      - push
-    permissions:
-      id-token: write
-      pull-requests: read
-      contents: read
-      deployments: write
-    steps:
-      - uses: RDXWorks-actions/checkout@main
-      - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
-        with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
-          app_name: 'signaling-server'
-          step_name: 'snyk-monitor'
-          secret_prefix: 'SNYK'
-          secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
-          parse_json: true
-      - name: Enable Snyk online monitoring to check for vulnerabilities
-        uses: RDXWorks-actions/snyk-actions/node@master
-        with:
-          args: --all-projects --org=${{ env.SNYK_PROJECTS_ORG_ID }} --target-reference=${{ github.ref_name }}
-          command: monitor
+  # snyk-monitor:
+  #   runs-on: ubuntu-latest
+  #   if: >
+  #     ( github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') ) ||
+  #     ( ${{ github.event_name == 'release' && github.event.release.prerelease == false }} )
+  #   needs:
+  #     - build
+  #     - push
+  #   permissions:
+  #     id-token: write
+  #     pull-requests: read
+  #     contents: read
+  #     deployments: write
+  #   steps:
+  #     - uses: RDXWorks-actions/checkout@main
+  #     - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+  #       with:
+  #         role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
+  #         app_name: 'signaling-server'
+  #         step_name: 'snyk-monitor'
+  #         secret_prefix: 'SNYK'
+  #         secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
+  #         parse_json: true
+  #     - name: Enable Snyk online monitoring to check for vulnerabilities
+  #       uses: RDXWorks-actions/snyk-actions/node@master
+  #       with:
+  #         args: --all-projects --org=${{ env.SNYK_PROJECTS_ORG_ID }} --target-reference=${{ github.ref_name }}
+  #         command: monitor
 
-  snyk-container-monitor:
-    runs-on: ubuntu-latest
-    if: >
-     ( github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') ) ||
-     ( ${{ github.event_name == 'release' && github.event.release.prerelease == false }} )
-    needs:
-      - build
-      - push
-    permissions:
-      id-token: write
-      pull-requests: read
-      contents: read
-      deployments: write
-    steps:
-      - uses: radixdlt/public-iac-resuable-artifacts/snyk-container-monitor@main
-        with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
-          app_name: 'signaling-server'
-          step_name: 'snyk-container-monitor'
-          dockerhub_secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/dockerhub-credentials'
-          snyk_secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
-          parse_json: true
-          snyk_org_id: ${{ secrets.SNYK_ORG_ID }}
-          image: docker.io/radixdlt/signaling-server:${{ needs.build.outputs.tag }}
-          target_ref: ${{ github.ref_name }}
+  # snyk-container-monitor:
+  #   runs-on: ubuntu-latest
+  #   if: >
+  #    ( github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') ) ||
+  #    ( ${{ github.event_name == 'release' && github.event.release.prerelease == false }} )
+  #   needs:
+  #     - build
+  #     - push
+  #   permissions:
+  #     id-token: write
+  #     pull-requests: read
+  #     contents: read
+  #     deployments: write
+  #   steps:
+  #     - uses: radixdlt/public-iac-resuable-artifacts/snyk-container-monitor@main
+  #       with:
+  #         role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
+  #         app_name: 'signaling-server'
+  #         step_name: 'snyk-container-monitor'
+  #         dockerhub_secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/dockerhub-credentials'
+  #         snyk_secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
+  #         parse_json: true
+  #         snyk_org_id: ${{ secrets.SNYK_ORG_ID }}
+  #         image: docker.io/radixdlt/signaling-server:${{ needs.build.outputs.tag }}
+  #         target_ref: ${{ github.ref_name }}
 
-  build:
-    runs-on: ubuntu-latest
-    needs:
-      - snyk-scan-deps-licences
-      - snyk-scan-code
-    outputs:
-      tag: ${{ steps.setup_tags.outputs.tag}}
-    steps:
-      - uses: RDXWorks-actions/checkout@main
-        if: github.event_name == 'pull_request'
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.ref }}
-      - uses: RDXWorks-actions/checkout@main
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'release'
-        with:
-          fetch-depth: 0
-      - name: Setup tags for docker image
-        id: setup_tags
-        run: |
-          if [[ ${{ github.event_name }} != 'release' ]]; then
-            GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD | sed 's/\//-/g')
-            GIT_COMMIT=$(git log -1 --format=%h )
+  # build:
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - snyk-scan-deps-licences
+  #     - snyk-scan-code
+  #   outputs:
+  #     tag: ${{ steps.setup_tags.outputs.tag}}
+  #   steps:
+  #     - uses: RDXWorks-actions/checkout@main
+  #       if: github.event_name == 'pull_request'
+  #       with:
+  #         fetch-depth: 0
+  #         ref: ${{ github.event.pull_request.head.ref }}
+  #     - uses: RDXWorks-actions/checkout@main
+  #       if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'release'
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Setup tags for docker image
+  #       id: setup_tags
+  #       run: |
+  #         if [[ ${{ github.event_name }} != 'release' ]]; then
+  #           GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD | sed 's/\//-/g')
+  #           GIT_COMMIT=$(git log -1 --format=%h )
             
-            DOCKER_TAG=${GIT_BRANCH}-${GIT_COMMIT}
-          else
-            DOCKER_TAG=${{ github.event.release.tag_name }}
-          fi
-          echo "DOCKER_TAG $DOCKER_TAG"
-          echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
-          echo "tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
-      - name: Use Node.js
-        uses: RDXWorks-actions/setup-node@main
-        with:
-          always-auth: true
-          node-version: 16.x
+  #           DOCKER_TAG=${GIT_BRANCH}-${GIT_COMMIT}
+  #         else
+  #           DOCKER_TAG=${{ github.event.release.tag_name }}
+  #         fi
+  #         echo "DOCKER_TAG $DOCKER_TAG"
+  #         echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
+  #         echo "tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
+  #     - name: Use Node.js
+  #       uses: RDXWorks-actions/setup-node@main
+  #       with:
+  #         always-auth: true
+  #         node-version: 16.x
 
-      - name: Get npm cache directory
-        id: npm-cache-dir
-        run: |
-          echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
+  #     - name: Get npm cache directory
+  #       id: npm-cache-dir
+  #       run: |
+  #         echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
 
-      - name: Cache Node.js modules
-        uses: RDXWorks-actions/cache@main
-        id: npm-cache # use this to check for `cache-hit` ==> if: steps.npm-cache.outputs.cache-hit != 'true'
-        with:
-          path: ${{ steps.npm-cache-dir.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+  #     - name: Cache Node.js modules
+  #       uses: RDXWorks-actions/cache@main
+  #       id: npm-cache # use this to check for `cache-hit` ==> if: steps.npm-cache.outputs.cache-hit != 'true'
+  #       with:
+  #         path: ${{ steps.npm-cache-dir.outputs.dir }}
+  #         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-node-
 
-      - name: Install dependencies
-        run: yarn install
+  #     - name: Install dependencies
+  #       run: yarn install
 
-      - name: Build
-        run: yarn run build
+  #     - name: Build
+  #       run: yarn run build
 
-      - name: Lint
-        run: yarn run lint
+  #     - name: Lint
+  #       run: yarn run lint
 
-      - uses: RDXWorks-actions/upload-artifact@main
-        with:
-          name: build.props
-          path: artifacts
-          retention-days: 1 # The minimum value possible.
+  #     - uses: RDXWorks-actions/upload-artifact@main
+  #       with:
+  #         name: build.props
+  #         path: artifacts
+  #         retention-days: 1 # The minimum value possible.
 
-  push:
-    name: (SPA) Docker
-    uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/docker-build.yml@main
-    needs: build
-    with:
-      runs_on: ubuntu-latest
-      image_registry: "docker.io"
-      image_organization: "radixdlt"
-      image_name: "signaling-server"
-      tag: ${{ needs.build.outputs.tag }}
-      dockerfile: "./Dockerfile"
-      context: ./
-      platforms: "linux/amd64"
-      scan_image: true
-      continue_on_scan_image_finding: true
-      snyk_target_ref: ${{ github.ref_name }}
-    secrets:
-      workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDP }}
-      service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+  # push:
+  #   name: (SPA) Docker
+  #   uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/docker-build.yml@main
+  #   needs: build
+  #   with:
+  #     runs_on: ubuntu-latest
+  #     image_registry: "docker.io"
+  #     image_organization: "radixdlt"
+  #     image_name: "signaling-server"
+  #     tag: ${{ needs.build.outputs.tag }}
+  #     dockerfile: "./Dockerfile"
+  #     context: ./
+  #     platforms: "linux/amd64"
+  #     scan_image: true
+  #     continue_on_scan_image_finding: true
+  #     snyk_target_ref: ${{ github.ref_name }}
+  #   secrets:
+  #     workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDP }}
+  #     service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
-  deploy_dev:
-    if:  github.ref == 'refs/heads/develop'
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
-    needs:
-      - push
-      - build
-    with:
-      app_name: signaling-server
-      step_name: deploy-dev
-      env_name: dev
-      namespace: signaling-server-dev
-      create_subns: false
-      aws_region: eu-west-2
-      role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-dev-deployer
-      eks_cluster: rdx-works-main-dev
-      helmfile_extra_vars: >-
-        ci.tag=${{ needs.build.outputs.tag }},
-        ci.environment=dev
+  # deploy_dev:
+  #   if:  github.ref == 'refs/heads/develop'
+  #   uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
+  #   needs:
+  #     - push
+  #     - build
+  #   with:
+  #     app_name: signaling-server
+  #     step_name: deploy-dev
+  #     env_name: dev
+  #     namespace: signaling-server-dev
+  #     create_subns: false
+  #     aws_region: eu-west-2
+  #     role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-dev-deployer
+  #     eks_cluster: rdx-works-main-dev
+  #     helmfile_extra_vars: >-
+  #       ci.tag=${{ needs.build.outputs.tag }},
+  #       ci.environment=dev
 
-  deploy_pull_request:
-    if: ${{ github.event_name == 'pull_request' }}
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
-    needs:
-      - push
-      - build
-    with:
-      app_name: signaling-server
-      step_name: deploy-pr
-      env_name: pr
-      hierarchical_namespace: signaling-server-ci-pr
-      namespace: signaling-server-pr-${{ github.event.number }}
-      create_subns: true
-      aws_region: eu-west-2
-      role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-pr-deployer
-      eks_cluster: rdx-works-main-dev
-      helmfile_extra_vars: >-
-        ci.tag=${{ needs.build.outputs.tag }},
-        ci.prNumber=${{ github.event.number }},
-        ci.environment=pr
+  # deploy_pull_request:
+  #   if: ${{ github.event_name == 'pull_request' }}
+  #   uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
+  #   needs:
+  #     - push
+  #     - build
+  #   with:
+  #     app_name: signaling-server
+  #     step_name: deploy-pr
+  #     env_name: pr
+  #     hierarchical_namespace: signaling-server-ci-pr
+  #     namespace: signaling-server-pr-${{ github.event.number }}
+  #     create_subns: true
+  #     aws_region: eu-west-2
+  #     role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-pr-deployer
+  #     eks_cluster: rdx-works-main-dev
+  #     helmfile_extra_vars: >-
+  #       ci.tag=${{ needs.build.outputs.tag }},
+  #       ci.prNumber=${{ github.event.number }},
+  #       ci.environment=pr
 
-  deploy_prod:
-    if: ${{ github.event_name == 'release' && github.event.release.prerelease == false }}
-    needs:
-      - build
-      - push
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
-    with:
-      github_environment: prod
-      app_name: signaling-server
-      step_name: deploy-prod
-      env_name: prod
-      namespace: signaling-server-prod
-      create_subns: false
-      aws_region: eu-west-2
-      role_to_assume: arn:aws:iam::821496737932:role/gh-signaling-server-prod-deployer
-      eks_cluster: rtlj-prod
-      helmfile_extra_vars: >-
-        ci.tag=${{ github.event.release.tag_name }},
-        ci.environment=prod
+  # deploy_prod:
+  #   if: ${{ github.event_name == 'release' && github.event.release.prerelease == false }}
+  #   needs:
+  #     - build
+  #     - push
+  #   uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
+  #   with:
+  #     github_environment: prod
+  #     app_name: signaling-server
+  #     step_name: deploy-prod
+  #     env_name: prod
+  #     namespace: signaling-server-prod
+  #     create_subns: false
+  #     aws_region: eu-west-2
+  #     role_to_assume: arn:aws:iam::821496737932:role/gh-signaling-server-prod-deployer
+  #     eks_cluster: rtlj-prod
+  #     helmfile_extra_vars: >-
+  #       ci.tag=${{ github.event.release.tag_name }},
+  #       ci.environment=prod
