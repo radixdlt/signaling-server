@@ -2,7 +2,7 @@ name: server
 
 on:
   push:
-    
+
   workflow_dispatch:
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
       - name: Run Snyk to check for deps vulnerabilities
         uses: RDXWorks-actions/snyk-actions/node@master
         with:
-          args: --all-projects --org=${{ env.SNYK_PROJECTS_ORG_ID }} --severity-threshold=critical
+          args: --all-projects --org=${{ env.SNYK_PROJECTS_ORG_ID }} --severity-threshold=high
 
   snyk-scan-code:
     runs-on: ubuntu-latest
