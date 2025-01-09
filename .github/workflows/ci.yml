@@ -24,10 +24,11 @@ jobs:
           secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
           parse_json: true
 
-      - name: Download .snyk policy file
-        run: |
-          curl -H "Authorization: token ${{ env.SNYK_TOKEN }}" https://snyk.io/api/v1/org/${{ env.SNYK_PROJECTS_ORG_ID }}/project/d5fa4f06-fc3c-43ef-9e6e-99631ba03926/ignores | jq '{"ignore": .}' | yq eval -P > .snyk
-          cat .snyk
+      - uses: radixdlt/public-iac-resuable-artifacts/fetch-snyk-policy@DO-2947-snyk-ignore-download
+        with:
+          token: ${{ env.SNYK_TOKEN }}
+          org_id: ${{ env.SNYK_PROJECTS_ORG_ID }}
+          project_id: 'd5fa4f06-fc3c-43ef-9e6e-99631ba03926'
 
       - name: Run Snyk to check for deps vulnerabilities
         uses: RDXWorks-actions/snyk-actions/node@master
