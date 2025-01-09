@@ -35,6 +35,7 @@ jobs:
         with:
           args: --all-projects --org=${{ env.SNYK_PROJECTS_ORG_ID }} --severity-threshold=high
 
+          
   snyk-scan-code:
     runs-on: ubuntu-latest
     permissions:
