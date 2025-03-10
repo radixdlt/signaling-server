@@ -102,13 +102,14 @@ const server = async () => {
 
   const send = (ws: uWs.WebSocket, message: MessageTypes) => {
     try {
-      log.trace({
-        event: 'SendWSMessage',
-        message: message,
-      })
+      if (message.info !== 'validationError')
+        log.trace({
+          event: 'SendWSMessage',
+          message: message,
+        })
       ws.send(JSON.stringify(message))
       outgoingMessageCounter.inc()
-    } catch (error) {
+    } catch (error: any) {
       if (
         (error as Error).message ===
         'Invalid access of closed uWS.WebSocket/SSLWebSocket.'
