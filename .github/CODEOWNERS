@@ -1,2 +1,2 @@
-/deploy/  @radixdlt/devops
-/.github/ @radixdlt/devops
+deploy/*  @radixdlt/devops
+.github/* @radixdlt/devops

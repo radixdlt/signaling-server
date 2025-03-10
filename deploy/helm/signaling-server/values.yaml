@@ -1,6 +1,6 @@
 server:
   port: 4000
-  logLevel: info
+  logLevel: 1
   nodeEnv: production
 
 redis:
@@ -14,17 +14,17 @@ redis:
 docker:
   secrets:
     region: eu-west-1
-    name: eu.gcr.io/dev-container-repo
+    name: docker.io/radixdlt
 
 replicaCount: 2
 
 image:
-  repository: eu.gcr.io/dev-container-repo/signaling-server
+  repository: docker.io/radixdlt/signaling-server
   pullPolicy: IfNotPresent
   tag: ''
 
 imagePullSecrets:
-  - name: docker-eu-gcr-dev
+  - name: docker-hub-dev
 
 nameOverride: ''
 fullnameOverride: ''
@@ -48,6 +48,7 @@ ingress:
   enabled: true
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/load-balance: "ewma"
     nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
     nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
     nginx.ingress.kubernetes.io/server-snippets: |
@@ -75,7 +76,6 @@ ingress:
 javascriptHeap: 13000
 resources:
   limits:
-    cpu: 1200m
     memory: 6Gi
   requests:
     cpu: 1200m
@@ -87,20 +87,16 @@ autoscaling:
   maxReplicas: 20
   targetCPUUtilizationPercentage: 60
 
-nodeSelector:
-  radixdlt.com/tier: 'signaling-server'
+nodeSelector: {}
 
-tolerations:
-  - key: 'signaling-server'
-    operator: 'Equal'
-    value: 'true'
-    effect: 'NoSchedule'
+tolerations: []
 
 affinity: {}
 
 metrics:
   enabled: true
   port: 4001
+  dashboard_url: "https://radixdlt.grafana.net/d/aegEXd97z/turn-server?orgId=1"
   serviceMonitor:
     path: /metrics
     interval: 15s

@@ -28,17 +28,17 @@ export const subscribeMessageCounter = new client.Counter({
 
 export const redisGetKeyTime = new client.Gauge({
   name: 'signaling_server_redis_get_time',
-  help: 'The time it takes in milliseconds for redis to get value',
+  help: 'The time it takes in milliseconds for redis to get values from set',
 })
 
 export const redisSetTime = new client.Gauge({
   name: 'signaling_server_redis_set_time',
-  help: 'The time it takes in milliseconds for redis to set value',
+  help: 'The time it takes in milliseconds for redis to add value to set',
 })
 
 export const redisDeleteTime = new client.Gauge({
   name: 'signaling_server_redis_delete_time',
-  help: 'The time it takes in milliseconds for redis to delete value',
+  help: 'The time it takes in milliseconds for redis to delete value from set',
 })
 
 export const redisPublishTime = new client.Gauge({

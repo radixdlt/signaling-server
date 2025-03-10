@@ -16,12 +16,13 @@ environments:
   default: {}
   dev: {}
   pr: {}
-  betanet: {}
+  prod: {}
 releases:
 {{ $SIG_SRV_NS := .Namespace }}
 {{ $SIG_SRV_IMAGE_TAG := .StateValues.ci.tag }}
 {{ $ENVIRONMENT_NAME := .Environment.Name }}
 {{ $INSTALL_LOCAL_REDIS := eq $ENVIRONMENT_NAME "pr" }}
+{{ $INSTALL_TURN_SERVER := ne $ENVIRONMENT_NAME "pr" }}
 
   - name: redis
     namespace: {{ $SIG_SRV_NS }}
@@ -41,7 +42,6 @@ releases:
        master:
          resources:
            limits:
-             cpu: 1000m
              memory: 512Mi
            requests:
              cpu: 1000m
@@ -56,11 +56,14 @@ releases:
            enabled: true
            additionalLabels:
              release: prometheus-operator
+
   - name: turn-server
+    installed: {{ $INSTALL_TURN_SERVER }}
     namespace: {{ $SIG_SRV_NS }}
     chart: ./turn-server
     values:
       - environments/{{ .Environment.Name }}/turn-server-values.yaml.gotmpl
+
   - name: signaling-server
     namespace: {{ $SIG_SRV_NS }}
     chart: ./signaling-server
@@ -80,6 +83,6 @@ releases:
     namespace: {{ $SIG_SRV_NS }}
     chart: rdx-works/alertmanager-configs
     installed: {{ ne $ENVIRONMENT_NAME "pr" }}
-    version: 1.0.0
+    version: 1.1.0
     values:
       - environments/{{ .Environment.Name }}/values.yaml.gotmpl

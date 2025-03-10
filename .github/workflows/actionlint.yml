@@ -7,4 +7,4 @@ on:
 
 jobs:
   actionlint:
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/actionlint.yml@v0.7.2
+    uses: radixdlt/iac-resuable-artifacts/.github/workflows/actionlint.yml@v0.15.0

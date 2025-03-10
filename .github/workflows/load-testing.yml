@@ -1,7 +1,5 @@
 name: load-testing
 on:
-  schedule:
-    - cron:  '10 0 * * MON'
   workflow_dispatch:
     inputs:
       totalTime:
@@ -15,11 +13,11 @@ on:
       userCount:
         required: false
         description: 'Number of users to emulate'
-        default: "70000"
+        default: '70000'
       signalingServer:
         required: false
         description: 'The signaling server hostname to use'
-        default: "signaling-server-dev.rdx-works-main.extratools.works"
+        default: 'signaling-server-dev.rdx-works-main.extratools.works'
 
 jobs:
   locust:
@@ -30,17 +28,17 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
+      - uses: RDXWorks-actions/checkout@main
         with:
           fetch-depth: 0
 
       - name: Install AWS CLI
-        uses: unfor19/install-aws-cli-action@8a86d81a0f1393cff1f44c77010cb2707e8a1066
+        uses: RDXWorks-actions/install-aws-cli-action@master
         with:
           version: 2
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@811cf67cbe28fd16d5a320c029542d8a3ae178c0
+        uses: RDXWorks-actions/configure-aws-credentials@main
         with:
           role-to-assume: arn:aws:iam::308190735829:role/gh-signaling-server-load-testing-runner
           aws-region: eu-west-2
@@ -55,8 +53,8 @@ jobs:
 
       - name: Scale up the workers
         run: |
-          kubectl scale deploy load-injector-worker -n load-injector-signaling-server --replicas 30
-          kubectl rollout status deployment load-injector-worker -n load-injector-signaling-server
+          kubectl scale deploy locust-worker -n load-injector-signaling-server --replicas 30
+          kubectl rollout status deployment locust-worker -n load-injector-signaling-server
 
       - name: Run the load test
         run: |
@@ -74,9 +72,11 @@ jobs:
           echo "User count: $USER_COUNT"
 
           curl -XPOST -sfL -v -u "$LOCUST_USER:$LOCUST_PASS" https://signaling-lcst.extratools.works/swarm \
-            -d "host=https://$SIGNALING_SERVER" \
+            -d "host=wss://$SIGNALING_SERVER" \
             -d "spawn_rate=$SPAWN_RATE" \
             -d "user_count=$USER_COUNT"
+
+          echo "Waiting $TOTAL_TIME seconds for the load test to complete"
 
           sleep $TOTAL_TIME
         env:
@@ -91,13 +91,11 @@ jobs:
         run: |
           SIGNALING_SERVER=${SIGNALING_SERVER:-signaling-server-dev.rdx-works-main.extratools.works}
 
-          echo "Starting e2e tests on $SIGNALING_SERVER"
-
           eval `ssh-agent -s`
           ssh-add - <<< '${{ secrets.PRIVATE_SSH_KEY }}'
 
-          git clone git@github.com:radixdlt/connector-extension.git e2e-tests
-          cd e2e-tests
+          git clone -b develop --single-branch git@github.com:radixdlt/connector-extension.git
+          cd connector-extension
 
           cat <<DOC > .env
           VITE_APP_SIGNALING_SERVER_BASE_URL=wss://$SIGNALING_SERVER
@@ -106,7 +104,12 @@ jobs:
 
           cat .env
 
-          make test
+          npm install
+
+          echo "Running connector-extension e2e tests on $SIGNALING_SERVER"
+
+          unset CI
+          npm run test
         env:
           SIGNALING_SERVER: ${{ inputs.signalingServer }}
 
@@ -134,5 +137,5 @@ jobs:
       - name: Scale down the workers
         if: always()
         run: |
-          kubectl scale deploy load-injector-worker -n load-injector-signaling-server --replicas 0
-          kubectl rollout restart deploy load-injector-master -n load-injector-signaling-server
+          kubectl scale deploy locust-worker -n load-injector-signaling-server --replicas 0
+          kubectl rollout restart deploy locust-master -n load-injector-signaling-server

@@ -8,3 +8,10 @@ service:
 
 metrics:
   environment: "pr"
+
+resources:
+  limits:
+    memory: 80Mi
+  requests:
+    cpu: 10m
+    memory: 80Mi
