@@ -39,6 +39,10 @@ releases:
        auth:
          enabled: true
          password: redis
+       image:
+         registry: public.ecr.aws
+         repository: u2o0d2a1/bitnami-redis
+         tag: 7.2.4-debian-12-r16
        master:
          resources:
            limits:
