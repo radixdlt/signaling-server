@@ -1,7 +1,13 @@
+environments:
+  default: {}
+  dev: {}
+  pr: {}
+  prod: {}
+---
 helmDefaults:
   verify: false
-  wait: false
-  timeout: 600
+  wait: true
+  timeout: 120
   recreatePods: false
   force: false
   createNamespace: false
@@ -12,11 +18,6 @@ repositories:
     url: https://raw.githubusercontent.com/radixdlt/helm-charts/master/
     username: {{ requiredEnv "HELM_GH_USER" }}
     password: {{ requiredEnv "HELM_GH_PASS" }}
-environments:
-  default: {}
-  dev: {}
-  pr: {}
-  prod: {}
 releases:
 {{ $SIG_SRV_NS := .Namespace }}
 {{ $SIG_SRV_IMAGE_TAG := .StateValues.ci.tag }}

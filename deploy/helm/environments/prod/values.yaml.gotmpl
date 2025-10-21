@@ -13,14 +13,15 @@ ingress:
 
 autoscaling:
   enabled: true
-  minReplicas: 4
-  maxReplicas: 15
+  minReplicas: 1
+  maxReplicas: 5
   targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: 70
 
 metrics:
-  env: prod
-  cluster: rtlj-prod
+  alert_labels:
+    env: prod
+    cluster: rtlj-prod
 
 redis:
   pub:
@@ -44,7 +45,7 @@ nodeSelector:
 
 resources:
   limits:
-    memory: 4Gi
+    memory: 512Mi
   requests:
-    cpu: 1000m
-    memory: 4Gi
+    cpu: 100m
+    memory: 192Mi
