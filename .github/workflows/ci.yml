@@ -98,62 +98,63 @@ jobs:
       workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDP }}
       service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
-  deploy_dev:
-    if:  github.ref == 'refs/heads/develop'
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
-    needs:
-      - push
-      - build
-    with:
-      app_name: signaling-server
-      step_name: deploy-dev
-      env_name: dev
-      namespace: signaling-server-dev
-      create_subns: false
-      aws_region: eu-west-2
-      role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-dev-deployer
-      eks_cluster: rdx-works-main-dev
-      helmfile_extra_vars: >-
-        ci.tag=${{ needs.build.outputs.tag }},
-        ci.environment=dev
+  # deploy_dev:
+  #   if:  github.ref == 'refs/heads/develop'
+  #   uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
+  #   needs:
+  #     - push
+  #     - build
+  #   with:
+  #     app_name: signaling-server
+  #     step_name: deploy-dev
+  #     env_name: dev
+  #     namespace: signaling-server-dev
+  #     create_subns: false
+  #     aws_region: eu-west-2
+  #     role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-dev-deployer
+  #     eks_cluster: rdx-works-main-dev
+  #     helmfile_extra_vars: >-
+  #       ci.tag=${{ needs.build.outputs.tag }},
+  #       ci.environment=dev
 
   deploy_pull_request:
     if: ${{ github.event_name == 'pull_request' }}
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
+    name: "Deploy PR"
+    uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/jenkins-deployment.yml@main
     needs:
       - push
       - build
     with:
-      app_name: signaling-server
-      step_name: deploy-pr
-      env_name: pr
-      hierarchical_namespace: signaling-server-ci-pr
-      namespace: signaling-server-pr-${{ github.event.number }}
-      create_subns: true
-      aws_region: eu-west-2
-      role_to_assume: arn:aws:iam::308190735829:role/gh-signaling-server-pr-deployer
-      eks_cluster: rdx-works-main-dev
-      helmfile_extra_vars: >-
-        ci.tag=${{ needs.build.outputs.tag }},
-        ci.prNumber=${{ github.event.number }},
-        ci.environment=pr
+      jenkins_job_name: 'kubernetes-deployments/job/signaling-server'
+      github_branch: '${{ github.head_ref }}'
+      application_name: 'sig-srv'
+      hierarchical_namespace: 'signaling-server-ci-pr'
+      create_subnamespace: 'true'
+      kubernetes_namespace: 'signaling-server-pr-${{ github.event.number }}'
+      aws_eks_cluster: 'rdx-works-main-dev'
+      aws_iam_role_name: 'jenkins-signaling-server-pr-deployer'
+      helmfile_environment: 'pr'
+      helmfile_extra_vars: 'ci.tag=${{ needs.build.outputs.tag }},ci.prNumber=${{ github.event.number }},ci.environment=pr'
+    secrets:
+      aws_deployment_account_id: ${{ secrets.AWS_DEV_ACCOUNT_ID }}
+      secrets_account_id: ${{ secrets.SECRETS_ACCOUNT_ID }}
 
-  deploy_prod:
-    if: ${{ github.event_name == 'release' && github.event.release.prerelease == false }}
-    needs:
-      - build
-      - push
-    uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
-    with:
-      github_environment: prod
-      app_name: signaling-server
-      step_name: deploy-prod
-      env_name: prod
-      namespace: signaling-server-prod
-      create_subns: false
-      aws_region: eu-west-2
-      role_to_assume: arn:aws:iam::821496737932:role/gh-signaling-server-prod-deployer
-      eks_cluster: rtlj-prod
-      helmfile_extra_vars: >-
-        ci.tag=${{ github.event.release.tag_name }},
-        ci.environment=prod
+  # deploy_prod:
+  #   if: ${{ github.event_name == 'release' && github.event.release.prerelease == false }}
+  #   needs:
+  #     - build
+  #     - push
+  #   uses: radixdlt/iac-resuable-artifacts/.github/workflows/deploy.yml@main
+  #   with:
+  #     github_environment: prod
+  #     app_name: signaling-server
+  #     step_name: deploy-prod
+  #     env_name: prod
+  #     namespace: signaling-server-prod
+  #     create_subns: false
+  #     aws_region: eu-west-2
+  #     role_to_assume: arn:aws:iam::821496737932:role/gh-signaling-server-prod-deployer
+  #     eks_cluster: rtlj-prod
+  #     helmfile_extra_vars: >-
+  #       ci.tag=${{ github.event.release.tag_name }},
+  #       ci.environment=prod
