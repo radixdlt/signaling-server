@@ -19,80 +19,69 @@ repositories:
     username: {{ requiredEnv "HELM_GH_USER" }}
     password: {{ requiredEnv "HELM_GH_PASS" }}
 releases:
-{{ $SIG_SRV_NS := .Namespace }}
-{{ $SIG_SRV_IMAGE_TAG := .StateValues.ci.tag }}
-{{ $ENVIRONMENT_NAME := .Environment.Name }}
-{{ $INSTALL_LOCAL_REDIS := eq $ENVIRONMENT_NAME "pr" }}
-{{ $INSTALL_TURN_SERVER := ne $ENVIRONMENT_NAME "pr" }}
 
   - name: redis
-    namespace: {{ $SIG_SRV_NS }}
     chart: bitnami/redis
     version: 16.10.1
-    installed: {{ $INSTALL_LOCAL_REDIS }}
+    installed: {{ eq .Environment.Name "pr" }}
     values:
-     - architecture: standalone
-       commonConfiguration: |
-         loglevel verbose
-         client-output-buffer-limit normal 0 0 0
-         client-output-buffer-limit slave 1024mb 128mb 60
-         client-output-buffer-limit pubsub 1024mb 128mb 60
-       auth:
-         enabled: true
-         password: redis
-       image:
-         registry: public.ecr.aws
-         repository: u2o0d2a1/bitnami-redis
-         tag: 7.2.4-debian-12-r16
+      - architecture: standalone
+        commonConfiguration: |
+          loglevel verbose
+          client-output-buffer-limit normal 0 0 0
+          client-output-buffer-limit slave 1024mb 128mb 60
+          client-output-buffer-limit pubsub 1024mb 128mb 60
+        auth:
+          enabled: true
+          password: redis
+        image:
+          registry: public.ecr.aws
+          repository: u2o0d2a1/bitnami-redis
+          tag: 7.2.4-debian-12-r16
+        master:
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              cpu: 1000m
+              memory: 512Mi
+          persistence:
+            enabled: true
+        replica:
+          replicaCount: 4
         metrics:
           image:
             registry: public.ecr.aws
             repository: u2o0d2a1/bitnami-redis-exporter
             tag: 1.58.0-debian-12-r7
-       master:
-         resources:
-           limits:
-             memory: 512Mi
-           requests:
-             cpu: 1000m
-             memory: 512Mi
-         persistence:
-           enabled: true
-       replica:
-         replicaCount: 4
-       metrics:
-         enabled: true
-         serviceMonitor:
-           enabled: true
-           additionalLabels:
-             release: prometheus-operator
+          enabled: true
+          serviceMonitor:
+            enabled: true
+            additionalLabels:
+              release: prometheus-operator
 
   - name: turn-server
-    installed: {{ $INSTALL_TURN_SERVER }}
-    namespace: {{ $SIG_SRV_NS }}
+    installed: {{ ne .Environment.Name "pr" }}
     chart: ./turn-server
     values:
       - environments/{{ .Environment.Name }}/turn-server-values.yaml.gotmpl
 
   - name: signaling-server
-    namespace: {{ $SIG_SRV_NS }}
     chart: ./signaling-server
     values: 
       - environments/{{ .Environment.Name }}/values.yaml.gotmpl
       - image:
-          tag: {{ $SIG_SRV_IMAGE_TAG }}
+          tag: {{ .StateValues.ci.tag  }}
 
   - name: developer-access
-    namespace: {{ $SIG_SRV_NS}}
     chart: rdx-works/developer-access
     version: 1.0.0
     values:
       - project: signaling-server
 
   - name: alertmanager
-    namespace: {{ $SIG_SRV_NS }}
     chart: rdx-works/alertmanager-configs
-    installed: {{ ne $ENVIRONMENT_NAME "pr" }}
+    installed: {{ ne .Environment.Name "pr" }}
     version: 1.1.0
     values:
       - environments/{{ .Environment.Name }}/values.yaml.gotmpl
