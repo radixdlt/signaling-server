@@ -6,6 +6,7 @@ metadata:
   labels:
     release: prometheus-operator
 spec:
+  fallbackScrapeProtocol: PrometheusText0.0.4
   endpoints:
   - port: metrics
     interval: {{ .Values.metrics.interval }}
