@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  master:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SIGNALING_SERVER_URL: ws://signaling-server:4000
+    ports:
+      - '8089:8089'
+    volumes:
+      - ./:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --master -H http://master:8089
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SIGNALING_SERVER_URL: ws://signaling-server:4000
+    volumes:
+      - ./:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --worker --master-host master
+
+networks:
+  default:
+    external:
+      name: signaling-server
