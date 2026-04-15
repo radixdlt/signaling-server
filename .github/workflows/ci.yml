@@ -91,7 +91,7 @@ jobs:
       tag: ${{ needs.build.outputs.tag }}
       dockerfile: "./Dockerfile"
       context: ./
-      platforms: "linux/amd64"
+      platforms: "linux/amd64,linux/arm64"
       scan_image: false
       continue_on_scan_image_finding: true
     secrets:
